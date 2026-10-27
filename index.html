@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+<html lang="fa" dir="ltr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lottie / TGS Editor</title>
+<style>
+:root{--bg:#121212;--p:#232323;--h:#2d2d2d;--b:#0d0d0d;--t:#c9c9c9;--a:#2d8ceb;color-scheme:dark}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--t);font:11px system-ui,sans-serif}
+body{overflow:hidden}
+#app{position:fixed;inset:0;display:flex;flex-direction:column;container-type:size;padding:env(safe-area-inset-top,0) env(safe-area-inset-right,0) env(safe-area-inset-bottom,0) env(safe-area-inset-left,0)}
+@media(orientation:portrait){#app{inset:auto;top:0;left:100vw;width:100vh;height:100vw;width:100dvh;height:100dvw;transform-origin:0 0;transform:rotate(90deg);padding:0}}
+#toast{position:absolute;bottom:42px;left:50%;transform:translateX(-50%);background:#c33;color:#fff;padding:6px 12px;border-radius:6px;display:none;z-index:9;font-size:12px}
+button{background:#3b3b3b;color:var(--t);border:1px solid #1a1a1a;border-radius:3px;padding:4px 7px;font:inherit;white-space:nowrap}
+button:active{background:#505050}
+button.on{background:var(--a);border-color:var(--a);color:#fff}button.full{border-color:#7c7}
+#bar{flex:none;display:flex;gap:4px;align-items:center;padding:4px 6px;background:var(--h);border-bottom:1px solid var(--b);overflow-x:auto}
+#info{margin-left:auto;opacity:.7;white-space:nowrap}
+#main{flex:1;display:grid;grid-template-columns:var(--cl,116px) minmax(0,1fr) var(--cr,300px);gap:2px;padding:2px;min-height:0;background:var(--bg)}
+.pn{background:var(--p);display:flex;flex-direction:column;min-height:0;min-width:0;overflow:hidden}
+h4{margin:0;padding:0 8px;height:22px;flex:none;display:flex;align-items:center;background:var(--h);border-bottom:1px solid var(--b);font-size:11px;font-weight:500;color:#e6e6e6}
+h4 b{font-weight:500;line-height:20px;border-bottom:2px solid var(--a)}
+.pb{flex:1;overflow:auto;min-height:0}
+.c{display:flex;align-items:center;gap:4px;padding:3px 6px}.c input{width:34px;height:22px;padding:0;border:0;background:none}
+/* viewer */
+#pz{display:none;position:absolute;inset:0;z-index:8;background:var(--bg);flex-direction:column}#pz.on{display:flex}
+#pzh{flex:none;display:flex;gap:6px;align-items:center;padding:4px 6px;background:var(--h);border-bottom:1px solid var(--b);overflow-x:auto}
+#pzt{flex:none;display:flex;gap:6px;align-items:center;flex-wrap:wrap;padding:4px 6px;background:var(--p);border-bottom:1px solid var(--b)}#pzt label{display:flex;gap:4px;align-items:center;white-space:nowrap}
+#pzt textarea{flex:1 1 160px;min-width:130px;background:#1a1a1a;color:var(--t);border:1px solid #444;border-radius:4px;font:15px system-ui;padding:5px}#pzt input[type=color]{width:34px;height:26px;padding:0;border:0;background:none}#pzt select{background:#3a3a3a;color:var(--t);border:1px solid #444;border-radius:4px;padding:4px}
+#pzt2{flex:none;display:flex;gap:6px;align-items:center;flex-wrap:wrap;padding:4px 6px;background:var(--p);border-bottom:1px solid var(--b)}#pzt2 label{display:flex;gap:4px;align-items:center;white-space:nowrap}#pzt2 select{background:#3a3a3a;color:var(--t);border:1px solid #444;border-radius:4px;padding:4px}
+#tgp{display:none;position:absolute;top:44px;left:50%;transform:translateX(-50%);z-index:9;background:var(--p);border:1px solid #444;border-radius:8px;padding:10px;gap:8px;flex-direction:column;width:min(94%,440px);max-height:88%;overflow:auto;font-size:12px}#tgp.on{display:flex}#tgp input[type=text],#tgp input[type=password],#tgp input[type=number],#tgp select{background:#1a1a1a;color:var(--t);border:1px solid #444;border-radius:4px;padding:6px;font:13px system-ui;width:100%;box-sizing:border-box;direction:ltr}#tgp label{display:flex;flex-direction:column;gap:3px}#tgp .r{display:flex;gap:6px;flex-wrap:wrap}#tgp small{opacity:.65;line-height:1.5}
+#pzhint{flex:none;padding:3px 8px;opacity:.6;font-size:10px}
+#pzg{flex:1;min-height:0;overflow:auto;display:grid;grid-template-columns:repeat(8,minmax(88px,1fr));align-content:start;padding:2px 0}
+.pzc{display:flex;flex-direction:column;min-width:0;border-right:1px solid #0008}
+.pzp{touch-action:none;aspect-ratio:1;background:repeating-conic-gradient(#e6e6e6 0 25%,#fff 0 50%) 0 0/12px 12px;overflow:hidden}.pzp svg{width:100%!important;height:100%!important;display:block}
+.pzn{font-size:10px;padding:2px 4px;opacity:.7;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pzl{max-height:130px;overflow:auto;border-top:1px solid #0006}.pzl label{display:flex;gap:4px;align-items:center;padding:4px;font-size:10px;border-bottom:1px solid #2c2c2c;overflow:hidden;white-space:nowrap}.pzl label.on{background:#4a2b2b}.pzl input{margin:0;flex:none}
+#V h4 span{margin-left:8px;opacity:.55}#main{position:relative}.sp{position:absolute;top:0;bottom:0;width:18px;z-index:6;touch-action:none;cursor:col-resize}.sp::after{content:'';position:absolute;left:7px;top:50%;height:46px;width:4px;margin-top:-23px;border-radius:2px;background:#ffffff66}#V h4 button{padding:1px 9px;height:18px;font-size:13px;line-height:14px}#tgL{margin-left:auto}#tgR{margin-left:4px}
+#ws{flex:1;position:relative;overflow:hidden;background:#1c1c1c;touch-action:none;min-height:0;-webkit-user-select:none;user-select:none}
+#stage{position:absolute;background:repeating-conic-gradient(#e6e6e6 0 25%,#fff 0 50%) 0 0/16px 16px;box-shadow:0 0 0 1px #000}
+#pv{width:100%;height:100%}#pv svg{width:100%!important;height:100%!important;display:block}
+.e{padding:10px;text-align:center;background:#000a;margin:0;color:#ddd}
+#vf{flex:none;display:flex;gap:4px;align-items:center;justify-content:center;padding:3px 6px;background:var(--h);border-top:1px solid var(--b)}
+#vf button{padding:2px 10px;font-size:13px;line-height:18px}#zl{min-width:58px;color:var(--a)}
+/* left tools */
+#xf{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;padding:6px 4px}#xf button{padding:9px 0;font-size:15px;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+#opw{padding:6px 8px;border-top:1px solid var(--b)}#opw label{display:flex;justify-content:space-between;margin-bottom:4px}#opw b{color:var(--a);font-weight:500}#opw input{width:100%;accent-color:#2d8ceb;margin:0}
+/* right column */
+#RC{display:grid;grid-template-rows:var(--rh,28%) minmax(0,1fr);gap:2px;min-height:0;min-width:0;position:relative}
+#lyw{flex:none;position:relative;height:var(--th,150px);padding:0 2px 2px;background:var(--bg)}#lyw .pn{height:100%}#spB{top:-9px}
+#rows{position:relative;min-height:100%}#rows2{position:relative;min-height:100%;width:max-content;min-width:100%}#rows .row{width:auto;min-width:0}
+.rz{position:sticky;left:0;display:inline-flex;gap:3px;padding:2px 3px;z-index:5;background:#2d2d2dcc;border-radius:0 0 4px 0}.rz button{padding:0 9px;font-size:13px;line-height:16px;height:18px}
+.row{display:flex;height:26px;border-bottom:1px solid #1a1a1a;align-items:center;width:max-content;min-width:100%}
+.row.sel{background:#3d4a63}.row span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 4px}
+.trk{position:relative;flex:none;width:var(--tw,200px);height:100%;border-left:1px solid #2c2c2c;touch-action:pan-y;background:repeating-linear-gradient(90deg,#0000 0 24px,#ffffff08 24px 25px)}
+.bar{position:absolute;top:1px;height:24px;background:#5865b0;border-radius:2px;min-width:6px;touch-action:none;user-select:none;-webkit-user-select:none;overflow:hidden;cursor:grab}
+.bar span{display:block;padding:0;text-align:center;font-size:9px;line-height:24px;color:#fff;pointer-events:none;white-space:nowrap}
+.bar.ty4{background:#5865b0}.bar.ty3{background:#a04545}.bar.ty0{background:#3f8f6a}.bar.ty2{background:#7d7d7d}.bar.ty1{background:#a0623a}.bar.ty5{background:#b0883a}.bar.hid{opacity:.35}
+.row.sel .bar,.row.pc .bar{outline:2px solid #fff;outline-offset:-2px;filter:brightness(1.3)}.row.pc .bar{outline-color:#7c7}
+.row.sel .nm{background:#3d4a63}.row.pc .nm{background:#2f5a35}.row.tg .nm{background:#4a4020}
+.lc{flex:none;width:9px;height:9px;margin:0 3px 0 0;border-radius:2px;background:#5865b0}.lc.ty3{background:#a04545}.lc.ty0{background:#3f8f6a}.lc.ty2{background:#7d7d7d}.lc.ty1{background:#a0623a}.lc.ty5{background:#b0883a}
+.row.rl{position:sticky;top:0;z-index:4;height:22px;background:var(--h);border-bottom:1px solid #000}.row.rl .nm{background:var(--h);gap:3px;padding:0 3px;justify-content:flex-start}.rn button{padding:0 8px;font-size:13px;line-height:16px;height:18px}
+.ngr{position:absolute;right:0;top:0;bottom:0;width:14px;touch-action:none;cursor:col-resize}.ngr::after{content:'';position:absolute;right:4px;top:50%;height:12px;width:3px;margin-top:-6px;background:#ffffff66;border-radius:2px}
+.row.rl .trk{background:none;cursor:pointer}.tk{position:absolute;top:0;bottom:0;border-left:1px solid #777;padding:3px 0 0 3px;font-size:9px;color:#bbb;pointer-events:none;font-style:normal;white-space:nowrap}.pmk{position:absolute;top:0;bottom:0;width:2px;margin-left:-1px;background:#ff4d4d;pointer-events:none}
+.sp.hz{bottom:auto;width:auto;height:18px;left:0;right:0;cursor:row-resize}.sp.hz::after{left:50%;top:7px;width:46px;height:4px;margin:0 0 0 -23px}
+.hl,.hr{position:absolute;top:0;bottom:0;width:min(14px,40%);background:#ffffff59;touch-action:none;cursor:ew-resize}.hl{left:0;border-radius:3px 0 0 3px}.hr{right:0;border-radius:0 3px 3px 0}
+#ph{position:absolute;top:0;bottom:0;width:2px;margin-left:-1px;background:#ff4d4d;pointer-events:none;z-index:1;display:none}
+#lt{flex:none;display:flex;gap:3px;flex-wrap:wrap;align-items:center;padding:3px 4px;background:var(--h);border-bottom:1px solid var(--b)}#lt button{padding:3px 8px;font-size:13px}#lr{margin-left:auto;opacity:.85;font-size:10px;white-space:nowrap}
+.nm{flex:1;display:flex;align-items:center;min-width:0;height:100%;background:var(--p)}.nm span{flex:1;min-width:0}
+.pw{padding:0 4px;border:0;background:none;font-size:16px;line-height:1;touch-action:none;opacity:.5;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}.pw.lk{opacity:1;filter:drop-shadow(0 0 3px #fb0)}
+.row.pc{background:#2f5a35}.row.tg{outline:2px solid #fb0;outline-offset:-2px;background:#4a4020}
+#pcb{display:none;flex:none;gap:4px;flex-wrap:wrap;align-items:center;padding:4px;background:#2d3f2d;border-bottom:1px solid var(--b)}#pcb.on{display:flex}#pcb #pct{flex:1 1 100%}#pcb button{padding:3px 6px}
+#lk{display:none;position:absolute;inset:0;width:100%;height:100%;z-index:7;pointer-events:none}
+.gb{display:flex;gap:4px;flex-wrap:wrap;padding:4px 6px}.gb button{padding:3px 7px;font-size:12px}
+/* bottom transport */
+#bt{flex:none;display:flex;gap:6px;align-items:center;height:38px;padding:3px 8px;background:var(--h);border-top:1px solid var(--b)}
+#bt button{padding:3px 10px;font-size:14px}
+#tc2{color:var(--a);font:13px ui-monospace,Menlo,monospace;min-width:78px}
+#fr{opacity:.75;min-width:70px;text-align:right}
+/* text panel */
+#tp{display:none;position:absolute;top:40px;left:50%;transform:translateX(-50%);z-index:8;background:var(--p);border:1px solid #444;border-radius:8px;padding:8px;gap:6px;flex-wrap:wrap;align-items:center;width:min(92%,460px)}#tp.on{display:flex}#tp textarea{flex:1 1 100%;background:#1a1a1a;color:var(--t);border:1px solid #444;border-radius:4px;font:15px system-ui;padding:5px}#tp input[type=color]{width:34px;height:26px;padding:0;border:0;background:none;vertical-align:middle}#tp select{background:#3a3a3a;color:var(--t);border:1px solid #444;border-radius:4px;padding:4px}
+</style></head><body>
+<div id="app"><div id="bar"><span id="sl" style="display:flex;gap:3px"></span>
+<button id="op">📂 باز کردن</button><button id="un">↩</button><button id="re">↪</button><button id="tb">🔤 متن</button><button id="ad" title="SVG / JSON / TGS">➕ افزودن</button><button id="rp" title="SVG / JSON / TGS">🔁 جایگزین</button><button id="pc">☑ انتخاب چندتایی</button><button id="sp" title="تقسیم یک لایه به چند لایهٔ جدا (برای کلیک روی چشم، دهان و...)">✂ لایه‌ها</button><button id="bl" title="پیدا کردن چشم با هوش مصنوعی و اضافه‌کردن پلک">👁 پلک زدن</button><button id="ab" title="پلک خودکار هنگام افزودن/جایگزینی JSON و TGS"></button><button id="ej">JSON</button><button id="et">TGS</button><button id="ep" title="بدون اسم لایه‌ها، بدون لایه‌ی مخفی و کامپ اضافه؛ ویرایش و کپی را سخت‌تر می‌کند">🔒 TGS محافظت‌شده</button><button id="tgb" title="ساخت پک ایموجی/استیکر در تلگرام از اسلات‌ها">✈️ تلگرام</button><button id="pzb" title="۸ تکه: وارد کردن، جایگزینی متن، افزودن TGS، خروجی">🧩 پازل</button><span id="info"></span></div>
+<div id="main">
+<div class="pn" id="L"><h4><b>Transform</b></h4><div id="xf"><button id="xsm">－</button><button id="xup">⬆</button><button id="xbg">＋</button><button id="xlf">⬅</button><button id="xdn">⬇</button><button id="xrt">➡</button><button id="xhd">👁</button><button id="xfl" title="Flip: tap = چپ/راست · hold = بالا/پایین">↔</button></div><div id="opw"><label>Opacity <b id="opv">100%</b></label><input type="range" id="opc" min="0" max="100" value="100"></div></div>
+<div class="pn" id="V"><h4><b>Composition</b><span id="cn"></span><button id="tgL" title="بستن/باز کردن پنل Transform">◧</button><button id="tgR" title="بستن/باز کردن پنل لایه‌ها و رنگ‌ها">◨</button></h4><div id="ws"><div id="stage"><div id="pv"></div></div></div>
+<div id="vf"><button id="zo">－</button><button id="zl" title="Fit">100%</button><button id="zi">＋</button><button id="zf" title="Fit">⤢</button></div></div>
+<div id="RC">
+<div class="pn" id="P"><h4><b>Colors</b></h4><div class="pb" id="cols"></div></div>
+<div class="pn" id="LY"><h4><b>Layers</b></h4><div id="lt"><button id="mT" title="ببر بالاترین (جلوی همه)">⤒</button><button id="mU" title="یک لایه بالا">⬆</button><button id="mD" title="یک لایه پایین">⬇</button><button id="mB" title="ببر پایین‌ترین">⤓</button><button id="tI" title="شروع لایه = فریم فعلی">⇤</button><button id="tO" title="پایان لایه = فریم فعلی">⇥</button><span id="lr"></span><button id="xdl" title="حذف لایه" style="border-color:#c55;margin-left:6px">🗑</button></div><div id="pcb"><span id="pct" style="flex:1"></span><button id="pcok" class="on">📦 Pre-comp</button><button id="pcbl">👁 پلک</button><button id="pcdl" style="border-color:#c55">🗑 حذف</button><button id="pccl">✕</button></div><div class="pb" id="tl"><div id="rows"></div></div></div>
+
+</div>
+</div>
+<div id="bt"><span id="tc2">0:00:00:00</span><button id="sb">◀|</button><button id="pl">▶</button><button id="sf">|▶</button><input type="range" id="sk" min="0" max="1000" value="0" style="flex:1;min-width:60px;accent-color:#2d8ceb"><span id="fr"></span></div>
+<div id="lyw"><div class="sp hz" id="spB"></div><div class="pn" id="TL"><div class="pb" id="tl2"><div id="rows2"><div id="ph"></div></div></div></div></div>
+<div id="tp"><textarea id="tx" rows="2" dir="auto" placeholder="متن..."></textarea><label>پر <input type="color" id="tc" value="#ffffff"></label><label>دور <input type="color" id="to" value="#000000"></label><label>ضخامت دور <input type="range" id="tw" min="0" max="30" value="8"></label><select id="tf"><option value='system-ui,sans-serif'>ساده</option><option value='"Arial Black",Impact,sans-serif'>ضخیم</option><option value='Georgia,serif'>سریف</option><option value='"Marker Felt","Comic Sans MS",cursive'>دست‌نویس</option></select><button id="tadd" class="on">افزودن</button><button id="tcl">✕</button></div><div id="pz"><div id="pzh"><button id="pzcl">✕ بازگشت</button><button id="pzi">📥 وارد کردن ۸ فایل</button><button id="pze">📤 خروجی همه</button><label style="display:flex;gap:3px;align-items:center;white-space:nowrap"><input type="checkbox" id="pzk"> 🔒 محافظت‌شده</label><button id="pzu" title="برگرداندن آخرین تغییر">↩</button><button id="pza" title="تیک خودکار لایه‌هایی که اسمشان text / متن است">☑ تیک متن‌های قدیمی</button><button id="pztg" class="on" title="ساخت خودکار پک ایموجی/استیکر در تلگرام">✈️ ساخت پک در تلگرام</button><button id="pzdl" style="border-color:#c55" title="لایه‌های تیک‌خورده زیر تکه‌ها را همین الان پاک می‌کند">🗑 حذف لایه‌های تیک‌خورده</button></div>
+<div id="pzt"><textarea id="pzx" rows="2" dir="auto" placeholder="متن جدید..."></textarea><label>پر <input type="color" id="pzfl" value="#ffffff"></label><label>دور <input type="color" id="pzol" value="#000000"></label><label>ضخامت دور <input type="range" id="pzw" min="0" max="30" value="0" style="width:70px"></label><label>اندازه <button id="pzsm">A−</button><input type="range" id="pzs" min="10" max="150" value="55" style="width:80px"><button id="pzsp">A+</button></label><label>چپ/راست <input type="range" id="pzxo" min="-2100" max="2100" value="0" style="width:70px"></label><label>بالا/پایین <input type="range" id="pzy" min="-300" max="300" value="0" style="width:70px"></label><select id="pzf"><option value='system-ui,sans-serif'>ساده</option><option value='"Arial Black",Impact,sans-serif'>ضخیم</option><option value='Georgia,serif'>سریف</option><option value='"Marker Felt","Comic Sans MS",cursive'>دست‌نویس</option></select><button id="pzr" class="on">➕ گذاشتن متن روی همه</button><button id="pzd" style="border-color:#c55">🗑 حذف متن</button></div>
+<div id="pzt2"><button id="pgi" class="on">🎞 افزودن TGS روی پازل</button><select id="pgt"></select><label>اندازه <input type="range" id="pgs" min="5" max="800" value="100" style="width:80px"></label><label>چپ/راست <input type="range" id="pgx" min="-2100" max="2100" value="0" style="width:80px"></label><label>بالا/پایین <input type="range" id="pgy" min="-400" max="400" value="0" style="width:80px"></label><label>کشیدن با انگشت: <select id="pdm"><option value="tx">متن</option><option value="tg">TGS</option></select></label><button id="pgd" style="border-color:#c55">🗑 حذف TGS</button></div>
+<div id="pzhint">۱) تا ۸ فایل را با هم انتخاب کن (به ترتیب نام چیده می‌شوند) · ۲) زیر هر تکه تیک لایه‌های متن قدیمی را بزن، در پیش‌نمایش ناپدید می‌شوند · ۳) متن را بنویس و «گذاشتن متن» را بزن؛ بعدش روی پیش‌نمایش بکش تا جابه‌جا شود، با اسلایدر یا A−/A+ اندازه را عوض کن، با «حذف متن» پاکش کن · ۴) «🗑 حذف لایه‌های تیک‌خورده» هر لایه‌ای (مثلاً متن قدیمی) را پاک می‌کند · ۵) «🎞 افزودن TGS» یک فایل TGS/JSON/SVG را روی کل پازل (یا فقط یک تکه) می‌گذارد؛ اندازه/جای آن را با اسلایدر یا کشیدن (حالت «TGS») تنظیم کن · ۶) «خروجی همه»</div>
+<div id="pzg"></div></div><div id="tgp"><b>✈️ ساخت پک در تلگرام</b>
+<label>توکن ربات (از @BotFather)<input type="password" id="tgk" placeholder="123456:ABC..." autocomplete="off"></label>
+<label>آیدی عددی تو (مالک پک — از @userinfobot؛ باید قبلاً ربات را Start کرده باشی)<input type="number" id="tgu" placeholder="123456789"></label>
+<div class="r"><label style="flex:1 1 140px">اسم کوتاه پک (انگلیسی)<input type="text" id="tgn" placeholder="my_puzzle"></label><label style="flex:1 1 140px">عنوان پک<input type="text" id="tgh" placeholder="My Puzzle"></label></div>
+<div class="r"><label style="flex:1 1 140px">نوع<select id="tgy"><option value="custom_emoji">ایموجی سفارشی</option><option value="regular">استیکر متحرک</option></select></label><label style="flex:1 1 140px">ایموجی مرتبط<input type="text" id="tge" value="🧩"></label></div>
+<label>کدام اسلات‌ها در پک بروند؟<select id="tgw"><option value="all">همهٔ اسلات‌های پر (۱ تا ۸)</option><option value="cur">فقط اسلات فعلی</option></select></label>
+<label style="flex-direction:row;align-items:center;gap:6px"><input type="checkbox" id="tgr"> توکن روی همین دستگاه یادم بماند</label>
+<small>همهٔ تکه‌ها به‌ترتیب (۱ تا ۸) در یک پک گذاشته می‌شوند. اگر پکی با این اسم از قبل وجود داشته باشد، تکه‌ها به آن اضافه می‌شوند. توکن فقط به api.telegram.org فرستاده می‌شود؛ بعد از کار بهتر است در BotFather تغییرش بدهی.</small>
+<div class="r"><button id="tgo" class="on">🚀 بساز و بفرست</button><button id="tgc">✕</button></div><div id="tgs" style="word-break:break-all"></div></div>
+<svg id="lk" xmlns="http://www.w3.org/2000/svg"><line stroke="#ffb020" stroke-width="3" stroke-dasharray="7 5" stroke-linecap="round"/><circle r="8" fill="#ffb020"/></svg><div id="toast"></div></div>
+<input type="file" id="pzfile" multiple hidden><input type="file" id="pgf" hidden><input type="file" id="f1" hidden><input type="file" id="f2" hidden><input type="file" id="f3" hidden>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
+<script>
+const $=s=>document.querySelector(s);
+const S=Array(8).fill(null);let cur=0,anim=null,sel=null,playing=false,pcMode=false,pcSel=[];
+const msg=t=>{const e=$('#toast');e.textContent=t;e.style.display=t?'block':'none';clearTimeout(msg.t);msg.t=setTimeout(()=>e.style.display='none',4500)};
+const walk=(o,cb)=>{if(Array.isArray(o))o.forEach(x=>walk(x,cb));else if(o&&typeof o==='object'){cb(o);for(const k in o)walk(o[k],cb)}};
+const hex=a=>'#'+a.slice(0,3).map(v=>Math.round(Math.min(1,Math.max(0,v))*255).toString(16).padStart(2,'0')).join('');
+const unhex=h=>[1,3,5].map(i=>parseInt(h.substr(i,2),16)/255);
+
+/* ---------- SVG -> Lottie (gradients kept) ---------- */
+const cx2=document.createElement('canvas').getContext('2d',{willReadFrequently:true});
+const rgb=c=>{cx2.clearRect(0,0,1,1);cx2.fillStyle='#000';cx2.fillStyle=c;cx2.fillRect(0,0,1,1);const d=cx2.getImageData(0,0,1,1).data;return[d[0]/255,d[1]/255,d[2]/255]};
+const A=(e,k,d=0)=>parseFloat(e.getAttribute(k))||d;
+function toD(e){const n=e.localName;
+ if(n==='path')return e.getAttribute('d')||'';
+ if(n==='rect'){const x=A(e,'x'),y=A(e,'y'),w=A(e,'width'),h=A(e,'height');return`M${x} ${y}H${x+w}V${y+h}H${x}Z`}
+ if(n==='circle'||n==='ellipse'){const cx=A(e,'cx'),cy=A(e,'cy'),rx=n==='circle'?A(e,'r'):A(e,'rx'),ry=n==='circle'?rx:A(e,'ry'),k=.5523;
+  return`M${cx+rx} ${cy}C${cx+rx} ${cy+ry*k} ${cx+rx*k} ${cy+ry} ${cx} ${cy+ry}C${cx-rx*k} ${cy+ry} ${cx-rx} ${cy+ry*k} ${cx-rx} ${cy}C${cx-rx} ${cy-ry*k} ${cx-rx*k} ${cy-ry} ${cx} ${cy-ry}C${cx+rx*k} ${cy-ry} ${cx+rx} ${cy-ry*k} ${cx+rx} ${cy}Z`}
+ if(n==='line')return`M${A(e,'x1')} ${A(e,'y1')}L${A(e,'x2')} ${A(e,'y2')}`;
+ const p=(e.getAttribute('points')||'').trim();return p?'M'+p+(n==='polygon'?'Z':''):''}
+function parsePath(d,f){
+ const t=d.match(/[a-zA-Z]|[-+]?(?:\d*\.\d+|\d+\.?)(?:e[-+]?\d+)?/gi)||[];
+ let i=0,c='',x=0,y=0,sx=0,sy=0,pc=null,pq=null,prev='',cu=null;const subs=[],bb=[1e9,1e9,-1e9,-1e9];
+ const n=()=>parseFloat(t[i++]),bx=(a,b)=>{bb[0]=Math.min(bb[0],a);bb[1]=Math.min(bb[1],b);bb[2]=Math.max(bb[2],a);bb[3]=Math.max(bb[3],b)};
+ const add=(a,b)=>{bx(a,b);cu.v.push(f(a,b));cu.i.push([0,0]);cu.o.push([0,0])};
+ const ens=()=>{if(!cu){cu={v:[],i:[],o:[],c:false};subs.push(cu);add(x,y)}};
+ const cv=(a,b,e,g,px,py)=>{ens();bx(a,b);bx(e,g);const l=cu.v.length-1,P1=f(a,b),P2=f(e,g);add(px,py);const V=cu.v[l],W=cu.v[l+1];cu.o[l]=[P1[0]-V[0],P1[1]-V[1]];cu.i[l+1]=[P2[0]-W[0],P2[1]-W[1]];pc=[e,g];x=px;y=py};
+ while(i<t.length){
+  if(/^[a-z]$/i.test(t[i]))c=t[i++];else if(c==='M')c='L';else if(c==='m')c='l';
+  const rel=c>='a',C=c.toUpperCase(),ox=rel?x:0,oy=rel?y:0;
+  if(C==='Z'){if(cu)cu.c=true;cu=null;x=sx;y=sy;prev='Z';if(i<t.length&&!/^[a-z]$/i.test(t[i]))break;continue}
+  if(C==='M'){x=n()+ox;y=n()+oy;sx=x;sy=y;cu=null;ens()}
+  else if(C==='L'){ens();x=n()+ox;y=n()+oy;add(x,y)}
+  else if(C==='H'){ens();x=n()+ox;add(x,y)}
+  else if(C==='V'){ens();y=n()+oy;add(x,y)}
+  else if(C==='C'){const a=n()+ox,b=n()+oy,e=n()+ox,g=n()+oy,px=n()+ox,py=n()+oy;cv(a,b,e,g,px,py)}
+  else if(C==='S'){const e=n()+ox,g=n()+oy,px=n()+ox,py=n()+oy,r=(prev==='C'||prev==='S')&&pc;cv(r?2*x-pc[0]:x,r?2*y-pc[1]:y,e,g,px,py)}
+  else if(C==='Q'||C==='T'){let q;if(C==='Q')q=[n()+ox,n()+oy];const px=n()+ox,py=n()+oy;if(C==='T')q=(prev==='Q'||prev==='T')&&pq?[2*x-pq[0],2*y-pq[1]]:[x,y];
+   pq=q;cv(x+2/3*(q[0]-x),y+2/3*(q[1]-y),px+2/3*(q[0]-px),py+2/3*(q[1]-py),px,py)}
+  else if(C==='A'){i+=5;ens();x=n()+ox;y=n()+oy;add(x,y)}
+  else break;
+  prev=C}
+ return{subs,bb}}
+function svgToShapes(txt){
+ const doc=new DOMParser().parseFromString(txt,'image/svg+xml'),svg=doc.documentElement;
+ if(doc.querySelector('parsererror'))throw'SVG نامعتبر';
+ let vb=(svg.getAttribute('viewBox')||'').trim().split(/[\s,]+/).map(Number);
+ if(vb.length<4||vb.some(isNaN))vb=[0,0,A(svg,'width',512),A(svg,'height',512)];
+ const sc=400/Math.max(vb[2],vb[3]),cx=vb[0]+vb[2]/2,cy=vb[1]+vb[3]/2,P=(x,y)=>[(x-cx)*sc,(y-cy)*sc];
+ const byId=id=>doc.querySelector('[id="'+id+'"]');
+ const prop=(e,k)=>{for(;e&&e.nodeType===1;e=e.parentNode){const m=(e.getAttribute('style')||'').match(new RegExp('(?:^|;)\\s*'+k+'\\s*:\\s*([^;]+)'));const v=m?m[1].trim():e.getAttribute(k);if(v!=null&&v!=='')return v}return null};
+ const mul=(p,q)=>[p[0]*q[0]+p[2]*q[1],p[1]*q[0]+p[3]*q[1],p[0]*q[2]+p[2]*q[3],p[1]*q[2]+p[3]*q[3],p[0]*q[4]+p[2]*q[5]+p[4],p[1]*q[4]+p[3]*q[5]+p[5]];
+ const mat=e=>{const ch=[];for(;e&&e.nodeType===1;e=e.parentNode)ch.unshift(e);let M=[1,0,0,1,0,0];
+  ch.forEach(el=>{for(const m of(el.getAttribute('transform')||'').matchAll(/(\w+)\s*\(([^)]*)\)/g)){const a=m[2].split(/[\s,]+/).filter(Boolean).map(Number);let q=[1,0,0,1,0,0];
+   if(m[1]==='translate')q=[1,0,0,1,a[0],a[1]||0];else if(m[1]==='scale')q=[a[0],0,0,a[1]??a[0],0,0];else if(m[1]==='matrix')q=a;
+   else if(m[1]==='rotate'){const r=a[0]*Math.PI/180,c=Math.cos(r),s=Math.sin(r);q=[c,s,-s,c,0,0];if(a.length>2)q=mul(mul([1,0,0,1,a[1],a[2]],q),[1,0,0,1,-a[1],-a[2]])}
+   M=mul(M,q)}});return M};
+ const ga=(g,n)=>{const v=g.getAttribute(n);if(v!=null)return v;const h=g.getAttribute('href')||g.getAttribute('xlink:href');const r=h&&byId(h.slice(1));return r?ga(r,n):null};
+ const stops=g=>{const s=[...g.querySelectorAll('stop')];if(s.length)return s;const h=g.getAttribute('href')||g.getAttribute('xlink:href');const r=h&&byId(h.slice(1));return r?stops(r):[]};
+ const num=(v,d)=>{if(v==null)return d;const p=v.includes('%');v=parseFloat(v);return p?v/100:v};
+ const K=v=>({a:0,k:v});
+ const paint=(v,bb,f,o,stroke,w,e)=>{
+  const m=/url\(['"]?#([^'")]+)/.exec(v),g=m&&byId(m[1]);
+  const base=stroke?{ty:'st',w:K(w),lc:{butt:1,round:2,square:3}[prop(e,'stroke-linecap')]||1,lj:{miter:1,round:2,bevel:3}[prop(e,'stroke-linejoin')]||1,ml:4}:{ty:'fl',r:prop(e,'fill-rule')==='evenodd'?2:1};
+  if(!g)return{...base,c:K([...rgb(v),1]),o:K(o*100)};
+  const rad=g.localName==='radialGradient',us=ga(g,'gradientUnits')==='userSpaceOnUse';
+  const mp=(a,b)=>us?f(a,b):f(bb[0]+a*(bb[2]-bb[0]),bb[1]+b*(bb[3]-bb[1]));
+  const q=(n,d)=>num(ga(g,n),d);
+  let s,en;if(rad){const gx=q('cx',.5),gy=q('cy',.5);s=mp(gx,gy);en=mp(gx+q('r',.5),gy)}else{s=mp(q('x1',0),q('y1',0));en=mp(q('x2',1),q('y2',0))}
+  const st=stops(g),k=[],al=[];
+  st.forEach(x=>{const off=Math.min(1,Math.max(0,num(x.getAttribute('offset'),0))),op=parseFloat(prop(x,'stop-opacity')??1);
+   k.push(off,...rgb(prop(x,'stop-color')||'#000'));al.push(off,op*o)});
+  const needA=al.some((v,i)=>i%2&&v<1);
+  return{...base,ty:stroke?'gs':'gf',t:rad?2:1,s:K(s),e:K(en),g:{p:st.length,k:K(needA?k.concat(al):k)},o:K(100)}};
+ const groups=[];
+ svg.querySelectorAll('path,rect,circle,ellipse,polygon,polyline,line').forEach(e=>{
+  if(e.closest('defs,clipPath,mask,symbol,pattern,marker'))return;
+  const M=mat(e),f=(x,y)=>P(M[0]*x+M[2]*y+M[4],M[1]*x+M[3]*y+M[5]);
+  const{subs,bb}=parsePath(toD(e),f);if(!subs.length)return;
+  let op=1;for(let p=e;p&&p.nodeType===1;p=p.parentNode){const v=parseFloat(p.getAttribute('opacity'));if(!isNaN(v))op*=v}
+  const it=subs.map(s=>({ty:'sh',ks:K({i:s.i,o:s.o,v:s.v,c:s.c})}));
+  const sk=prop(e,'stroke'),fl=prop(e,'fill')??'#000';
+  if(sk&&sk!=='none')it.push(paint(sk,bb,f,op*parseFloat(prop(e,'stroke-opacity')??1),true,(parseFloat(prop(e,'stroke-width'))||1)*sc*Math.hypot(M[0],M[1]),e));
+  if(fl!=='none')it.push(paint(fl,bb,f,op*parseFloat(prop(e,'fill-opacity')??1),false,0,e));
+  it.push({ty:'tr',p:K([0,0]),a:K([0,0]),s:K([100,100]),r:K(0),o:K(100),sk:K(0),sa:K(0)});
+  groups.push({ty:'gr',it,nm:e.id||e.localName})});
+ if(!groups.length)throw'شکلی در SVG پیدا نشد';
+ return groups.reverse()}
+const K1=v=>({a:0,k:v});
+const shapeLayer=(shapes,nm)=>({ddd:0,ind:1,ty:4,nm,sr:1,ks:{o:K1(100),r:K1(0),p:K1([256,256,0]),a:K1([0,0,0]),s:K1([100,100,100])},ao:0,shapes,ip:0,op:180,st:0,bm:0});
+const newLottie=(sh,nm)=>({v:'5.5.2',fr:60,ip:0,op:180,w:512,h:512,nm,ddd:0,assets:[],layers:[shapeLayer(sh,nm)]});
+
+/* ---------- player ---------- */
+function ph(){if(!anim)return;const d=S[cur]&&S[cur].data,fps=(d&&d.fr)||60,f=Math.round(anim.currentFrame),ss=Math.floor(f/fps),p=Math.min(1,anim.currentFrame/anim.totalFrames);
+$('#tc2').textContent='0:'+String(Math.floor(ss/60)).padStart(2,'0')+':'+String(ss%60).padStart(2,'0')+':'+String(f%fps).padStart(2,'0');
+$('#fr').textContent=f+' / '+Math.round(anim.totalFrames);$('#sk').value=p*1000;phLine()}
+const layerAt=(d,path)=>{let arr=d.layers,l;for(const i of path){l=arr&&arr[i];arr=(l&&l.refId&&((d.assets||[]).find(a=>a.id===l.refId)||{}).layers)||null}return l};
+const hitPath=(els,t)=>{for(let i=0;i<els.length;i++){const e=els[i];if(e&&e.baseElement&&e.baseElement.contains(t)){const p=e.elements&&hitPath(e.elements,t);return p?[i,...p]:[i]}}return null};
+function hi(){if(!anim)return;const svg=anim.renderer.svgElement;if(!svg)return;const old=svg.querySelector('#selbox');if(old)old.remove();
+ if(!sel)return;let els=anim.renderer.elements,e;for(const i of sel){e=els&&els[i];els=e&&e.elements}
+ if(!e||!e.baseElement)return;
+ try{const g=e.baseElement,b=g.getBBox();if(!(b.width>0||b.height>0))return;
+  const M=svg.getScreenCTM().inverse().multiply(g.getScreenCTM()),pt=svg.createSVGPoint();
+  const pts=[[b.x,b.y],[b.x+b.width,b.y],[b.x+b.width,b.y+b.height],[b.x,b.y+b.height]].map(([x,y])=>{pt.x=x;pt.y=y;const q=pt.matrixTransform(M);return q.x+','+q.y}).join(' ');
+  const NS='http://www.w3.org/2000/svg',G=document.createElementNS(NS,'g');G.id='selbox';G.style.pointerEvents='none';
+  [['#fff',4,''],['#00d8ff',2,'6 4']].forEach(([c,w,da])=>{const p=document.createElementNS(NS,'polygon');p.setAttribute('points',pts);p.setAttribute('fill','none');p.setAttribute('stroke',c);p.setAttribute('stroke-width',w);p.setAttribute('vector-effect','non-scaling-stroke');if(da)p.setAttribute('stroke-dasharray',da);G.append(p)});
+  svg.append(G)}catch(_){}}
+$('#pv').onclick=e=>{if(!anim||Date.now()-gestT<350)return;const p=hitPath(anim.renderer.elements,e.target);
+ if(pcMode){const n=pcSel.length?pcSel[0].length:1;if(p&&p.length>=n)togglePc(p.slice(0,n));return}
+ sel=p;panels()};
+function snap(){const s=S[cur];s.h.push(JSON.stringify(s.data));if(s.h.length>40)s.h.shift();s.r=[]}
+function hist(a,b){const s=S[cur];if(!s||!s[a].length)return msg('چیزی برای برگشت نیست');s[b].push(JSON.stringify(s.data));s.data=JSON.parse(s[a].pop());show(true)}
+$('#un').onclick=()=>hist('h','r');$('#re').onclick=()=>hist('r','h');
+addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'){e.preventDefault();e.shiftKey?hist('r','h'):hist('h','r')}});
+function X(dx,dy,k){const s=S[cur],d=s&&s.data,l=sel&&layerAt(d,sel);if(!l)return msg('اول روی لایه کلیک کن');
+ if(l.ty===4){let w=l.shapes[0];
+  if(!(l.shapes.length===1&&w.nm==='__xf')){w={ty:'gr',nm:'__xf',it:[...l.shapes,{ty:'tr',p:K1([0,0]),a:K1([0,0]),s:K1([100,100]),r:K1(0),o:K1(100),sk:K1(0),sa:K1(0)}]};l.shapes=[w]}
+  const t=w.it[w.it.length-1];
+  if(!X.c){try{let els=anim.renderer.elements,el;for(const i of sel){el=els[i];els=el.elements}const b=el.baseElement.getBBox();X.c=[b.x+b.width/2,b.y+b.height/2]}catch(_){X.c=[0,0]}}
+  const c=X.c;
+  if(k!==1){t.p.k=[c[0]+k*(t.p.k[0]-c[0]),c[1]+k*(t.p.k[1]-c[1])];t.s.k=t.s.k.map(v=>v*k)}
+  t.p.k=[t.p.k[0]+dx,t.p.k[1]+dy];c[0]+=dx;c[1]+=dy}
+ else{const ks=l.ks;
+  if(dx||dy){
+   if(!ks.p.a&&!ks.p.s&&typeof ks.p.k[0]==='number')ks.p.k=[ks.p.k[0]+dx,ks.p.k[1]+dy,...ks.p.k.slice(2)];
+   else if(ks.a&&!ks.a.a&&Array.isArray(ks.a.k)){const m=locM(elAt(sel));if(!m)return msg('این لایه انیمیشن دارد');const t=m[0]*m[3]-m[1]*m[2]||1e-9;
+    ks.a.k=[ks.a.k[0]-(m[3]*dx-m[2]*dy)/t,ks.a.k[1]-(-m[1]*dx+m[0]*dy)/t,...ks.a.k.slice(2)]}
+   else return msg('این لایه انیمیشن دارد')}
+  if(k!==1)scaleProp(ks.s,k)}
+ load(true)}
+{const D={xup:[0,-8,1],xdn:[0,8,1],xlf:[-8,0,1],xrt:[8,0,1],xbg:[0,0,1.06],xsm:[0,0,1/1.06]};let tm=null;const stopH=()=>{clearInterval(tm);tm=null};
+ for(const id in D){const b=$('#'+id);b.onpointerdown=e=>{e.preventDefault();stopH();if(!sel||!S[cur])return msg('اول روی لایه کلیک کن');snap();X.c=null;let f=1/8;const sc2=v=>[v[0]*f,v[1]*f,1+(v[2]-1)*f];X(...sc2(D[id]));tm=setInterval(()=>{f=Math.min(1,f+.07);X(...sc2(D[id]))},110)};['pointerup','pointerleave','pointercancel'].forEach(ev=>b.addEventListener(ev,stopH))}}
+$('#xhd').onclick=()=>{const l=sel&&S[cur]&&layerAt(S[cur].data,sel);if(!l)return msg('اول روی لایه کلیک کن');snap();l.hd=!l.hd;load(true);panels()};
+$('#xdl').onclick=()=>{const d=S[cur]&&S[cur].data,l=sel&&d&&layerAt(d,sel);if(!l)return msg('اول روی لایه کلیک کن');
+ snap();let arr=d.layers;for(let k=0;k<sel.length-1;k++)arr=((d.assets||[]).find(a=>a.id===arr[sel[k]].refId)||{}).layers||[];
+ const i=sel[sel.length-1];arr.splice(i,1);arr.forEach(x=>{if(l.ind!=null&&x.parent===l.ind)delete x.parent});if(l.td&&arr[i])delete arr[i].tt;sel=null;show(true)};
+$('#ad').onclick=()=>S[cur]?$('#f3').click():msg('اول یک فایل باز کنید');
+$('#f3').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;
+ try{if(!/\.svg$/i.test(f.name)){addLottie(await readLottie(f),f.name.replace(/\.[^.]+$/,''));return}const sh=svgToShapes(await f.text()),d=S[cur].data;snap();const n=shapeLayer(sh,f.name.replace(/\.[^.]+$/,''));n.ind=Math.max(0,...d.layers.map(x=>x.ind||0))+1;n.ip=d.ip;n.op=d.op;n.ks.p.k=[d.w/2,d.h/2,0];d.layers.unshift(n);sel=[0];show(true)}catch(x){msg('خطا: '+x)}};
+function traceText(txt,fam,size){
+ const c=document.createElement('canvas'),x=c.getContext('2d',{willReadFrequently:true}),F='bold '+size+'px '+fam;x.font=F;
+ const L=txt.split('\n'),lh=size*1.25,pad=size*.3;
+ const w=Math.ceil(Math.max(...L.map(l=>x.measureText(l).width))+pad*2),h=Math.ceil(L.length*lh+pad*2);
+ c.width=w;c.height=h;x.font=F;x.textAlign='center';x.textBaseline='middle';x.fillStyle='#000';
+ L.forEach((l,i)=>x.fillText(l,w/2,pad+lh*(i+.5)));
+ const d=x.getImageData(0,0,w,h).data,B=(i,j)=>i>=0&&j>=0&&i<w&&j<h&&d[(j*w+i)*4+3]>127?1:0;
+ const E=(k,i,j)=>k==='T'?[2*i+1,2*j]:k==='R'?[2*i+2,2*j+1]:k==='B'?[2*i+1,2*j+2]:[2*i,2*j+1];
+ const T=[[],['LT'],['TR'],['LR'],['RB'],['LT','RB'],['TB'],['LB'],['LB'],['TB'],['TR','LB'],['RB'],['LR'],['TR'],['LT']];
+ const segs=[],mp=new Map(),key=p=>p[0]+','+p[1];
+ for(let j=-1;j<h;j++)for(let i=-1;i<w;i++){const m=B(i,j)|B(i+1,j)<<1|B(i+1,j+1)<<2|B(i,j+1)<<3;
+  for(const s of T[m]||[]){const p=E(s[0],i,j),q=E(s[1],i,j),n=segs.length;segs.push([p,q,0]);for(const e of[p,q]){const k=key(e);if(!mp.has(k))mp.set(k,[]);mp.get(k).push(n)}}}
+ const dp=(P,e)=>{if(P.length<3)return P;const a=P[0],b=P[P.length-1],dx=b[0]-a[0],dy=b[1]-a[1],n=Math.hypot(dx,dy)||1;let m=0,k=0;
+  for(let i=1;i<P.length-1;i++){const q=Math.abs((P[i][0]-a[0])*dy-(P[i][1]-a[1])*dx)/n;if(q>m){m=q;k=i}}
+  return m>e?dp(P.slice(0,k+1),e).slice(0,-1).concat(dp(P.slice(k),e)):[a,b]};
+ const polys=[];
+ for(let s=0;s<segs.length;s++){if(segs[s][2])continue;segs[s][2]=1;const st=segs[s][0],sk=key(st),pts=[st];let cur=segs[s][1];
+  for(;;){pts.push(cur);const k=key(cur);if(k===sk)break;const nx=(mp.get(k)||[]).find(n=>!segs[n][2]);if(nx==null)break;segs[nx][2]=1;const sg=segs[nx];cur=key(sg[0])===k?sg[1]:sg[0]}
+  let P=pts.map(p=>[p[0]/2,p[1]/2]);if(P.length<8)continue;P.pop();
+  let far=0,md=0;P.forEach((p,i)=>{const q=Math.hypot(p[0]-P[0][0],p[1]-P[0][1]);if(q>md){md=q;far=i}});
+  const A=P.slice(0,far+1),Bp=P.slice(far).concat([P[0]]);
+  P=dp(A,.7).slice(0,-1).concat(dp(Bp,.7).slice(0,-1));if(P.length>=3)polys.push(P)}
+ return{polys,w,h}}
+function textShapes(txt,fam,fill,line,t){
+ const{polys,w,h}=traceText(txt,fam,240);if(!polys.length)throw'متن قابل نمایش نیست';
+ const f=400/Math.max(w,h);
+ const it=polys.map(P=>({ty:'sh',ks:K1({i:P.map(()=>[0,0]),o:P.map(()=>[0,0]),v:P.map(p=>[(p[0]-w/2)*f,(p[1]-h/2)*f]),c:true})}));
+ it.push({ty:'fl',c:K1([...unhex(fill),1]),o:K1(100),r:2});
+ if(t>0)it.push({ty:'st',c:K1([...unhex(line),1]),o:K1(100),w:K1(2*t*f),lc:2,lj:2,ml:4});
+ it.push({ty:'tr',p:K1([0,0]),a:K1([0,0]),s:K1([100,100]),r:K1(0),o:K1(100),sk:K1(0),sa:K1(0)});
+ return[{ty:'gr',it,nm:'text'}]}
+$('#tb').onclick=()=>$('#tp').classList.toggle('on');$('#tcl').onclick=()=>$('#tp').classList.remove('on');
+$('#tadd').onclick=()=>{const t=$('#tx').value.trim();if(!t)return msg('متن را بنویس');
+ try{const sh=textShapes(t,$('#tf').value,$('#tc').value,$('#to').value,+$('#tw').value);
+  if(!S[cur]){S[cur]={name:'text',data:{v:'5.5.2',fr:60,ip:0,op:180,w:512,h:512,nm:'text',ddd:0,assets:[],layers:[]},h:[],r:[]}}
+  const d=S[cur].data;snap();const n=shapeLayer(sh,'text '+t.slice(0,12));n.ind=Math.max(0,...d.layers.map(x=>x.ind||0))+1;n.ip=d.ip;n.op=d.op;n.ks.p.k=[d.w/2,d.h/2,0];d.layers.unshift(n);sel=[0];$('#tp').classList.remove('on');show(true)}catch(x){msg('خطا: '+x)}};
+/* ---------- helpers: matrices / parent (pick whip) / pre-compose / lottie import ---------- */
+const LW=128;
+const layersOf=(d,path)=>{let arr=d.layers;for(let k=0;k<path.length-1;k++)arr=((d.assets||[]).find(a=>a.id===arr[path[k]].refId)||{}).layers||[];return arr};
+const elAt=path=>{let els=anim&&anim.renderer.elements,e;for(const i of path){e=els&&els[i];els=e&&e.elements}return e};
+const mmul=(p,q)=>[p[0]*q[0]+p[2]*q[1],p[1]*q[0]+p[3]*q[1],p[0]*q[2]+p[2]*q[3],p[1]*q[2]+p[3]*q[3],p[0]*q[4]+p[2]*q[5]+p[4],p[1]*q[4]+p[3]*q[5]+p[5]];
+const minv=m=>{const[a,b,c,d,e,f]=m,t=a*d-b*c||1e-9;return[d/t,-b/t,-c/t,a/t,(c*f-d*e)/t,(b*e-a*f)/t]};
+const locM=e=>{const v=e&&e.finalTransform&&e.finalTransform.mProp&&e.finalTransform.mProp.v,q=v&&v.props;return q?[q[0],q[1],q[4],q[5],q[12],q[13]]:null};
+const sameM=(m,n)=>m.every((v,i)=>Math.abs(v-n[i])<1e-4);
+const dec=(m,A)=>{const[a,b,c,d,e,f]=m,sx=Math.hypot(a,b)||1e-6;return{r:Math.atan2(b,a)*180/Math.PI,sx,sy:(a*d-b*c)/sx,px:e+a*A[0]+c*A[1],py:f+b*A[0]+d*A[1]}};
+const isBridge=l=>l&&l.ty===3&&l.nm==='link fix';
+const realParent=(arr,l)=>{let x=l.parent!=null?arr.find(y=>y.ind===l.parent):null,g=0;while(isBridge(x)&&g++<20)x=x.parent!=null?arr.find(y=>y.ind===x.parent):null;return x||null};
+const loc=(X,Y)=>{const r=$('#app').getBoundingClientRect();return matchMedia('(orientation:portrait)').matches?[Y-r.top,r.right-X]:[X-r.left,Y-r.top]};
+
+/* Parent & Link: child keeps its current look, then follows the parent's motion */
+function setParent(pa,tpa,quiet){
+ const s=S[cur],d=s.data,arr=layersOf(d,pa),c=layerAt(d,pa),P=tpa?layerAt(d,tpa):null;
+ if(tpa){if(tpa.slice(0,-1).join()!==pa.slice(0,-1).join())return msg('والد باید داخل همان کامپ باشد');if(P===c)return;
+  for(let x=P,g=0;x&&g<60;g++){if(x===c)return msg('نمی‌شود: حلقهٔ والد-فرزند');const q=x.parent;x=q!=null?arr.find(y=>y.ind===q):null}}
+ const up=pa.slice(0,-1),el=i=>elAt([...up,i]),find=n=>n!=null?arr.find(y=>y.ind===n):null,I=[1,0,0,1,0,0];
+ const Wf=l=>{const ch=[];for(let x=l,g=0;x&&g<60;g++){ch.unshift(x);x=find(x.parent)}let M=I;for(const x of ch){const m=locM(el(arr.indexOf(x)));if(!m)return null;M=mmul(M,m)}return M};
+ const B0=find(c.parent),isB=isBridge(B0),Wo=B0?Wf(B0):I,Wn=P?Wf(P):I,Mc=locM(el(pa[pa.length-1]));
+ if(!quiet)snap();
+ const mx=()=>Math.max(0,...arr.map(x=>x.ind||0))+1,setPar=(x,Q)=>{if(Q)x.parent=Q.ind;else delete x.parent};
+ const bk=q=>({o:K1(0),r:K1(q.r),p:K1([q.px,q.py,0]),a:K1([0,0,0]),s:K1([q.sx*100,q.sy*100,100])});
+ if(P&&P.ind==null)P.ind=mx();
+ let warn='';
+ if(!Wo||!Wn||!Mc){setPar(c,P);warn=' (ممکن است بپرد)'}
+ else if(isB){B0.ks=bk(dec(mmul(minv(Wn),Wo),[0,0]));setPar(B0,P)}
+ else if(sameM(Wo,Wn))setPar(c,P);
+ else{
+  const ks=c.ks||(c.ks={}),A=ks.a&&!ks.a.a&&Array.isArray(ks.a.k)?ks.a.k:[0,0,0];
+  const ok=ks.p&&!ks.p.a&&!ks.p.s&&Array.isArray(ks.p.k)&&ks.s&&!ks.s.a&&Array.isArray(ks.s.k)&&(!ks.r||(!ks.r.a&&typeof ks.r.k==='number'))&&!(ks.sk&&(ks.sk.a||ks.sk.k))&&(!ks.a||!ks.a.a);
+  if(ok){const q=dec(mmul(minv(Wn),mmul(Wo,Mc)),A);ks.p.k=[q.px,q.py,...ks.p.k.slice(2)];ks.s.k=[q.sx*100,q.sy*100,...ks.s.k.slice(2)];ks.r=K1(q.r);setPar(c,P)}
+  else{const q=dec(mmul(minv(Wn),Wo),[0,0]),N={ddd:0,ind:mx(),ty:3,nm:'link fix',sr:1,ks:bk(q),ao:0,ip:d.ip,op:d.op,st:0,bm:0};if(P)N.parent=P.ind;arr.push(N);c.parent=N.ind}
+ }
+ if(!quiet){msg((P?'وصل شد به: '+(P.nm||'#'+P.ind):'ارتباط قطع شد')+warn);load(true);panels()}}
+
+function pickWhip(e,pa,l,arr,btn){
+ e.preventDefault();e.stopPropagation();if(!S[cur])return;
+ const svg=$('#lk'),ln=svg.querySelector('line'),ci=svg.querySelector('circle'),r0=btn.getBoundingClientRect(),X0=r0.left+r0.width/2,Y0=r0.top+r0.height/2,pk=pa.join();
+ let moved=false,tg=null;
+ const draw=(X,Y)=>{const a=loc(X0,Y0),b=loc(X,Y);ln.setAttribute('x1',a[0]);ln.setAttribute('y1',a[1]);ln.setAttribute('x2',b[0]);ln.setAttribute('y2',b[1]);ci.setAttribute('cx',b[0]);ci.setAttribute('cy',b[1])};
+ svg.style.display='block';draw(X0,Y0);
+ const mv=ev=>{ev.preventDefault();if(Math.hypot(ev.clientX-X0,ev.clientY-Y0)>8)moved=true;draw(ev.clientX,ev.clientY);
+  const t=document.elementFromPoint(ev.clientX,ev.clientY),r=t&&t.closest?t.closest('.row'):null;
+  if(tg)tg.classList.remove('tg');tg=r&&r._pa&&r._pa.join()!==pk?r:null;if(tg)tg.classList.add('tg')};
+ const up=()=>{removeEventListener('pointermove',mv);removeEventListener('pointerup',up);removeEventListener('pointercancel',up);
+  svg.style.display='none';if(tg)tg.classList.remove('tg');
+  if(!moved){if(realParent(arr,l))setParent(pa,null);else msg('مارپیچ را بگیر و روی لایهٔ والد رها کن')}
+  else if(tg)setParent(pa,tg._pa);
+  else if(realParent(arr,l))setParent(pa,null)};
+ addEventListener('pointermove',mv,{passive:false});addEventListener('pointerup',up);addEventListener('pointercancel',up)}
+
+/* Pre-compose */
+function togglePc(pa){const k=pa.join(),i=pcSel.findIndex(q=>q.join()===k);
+ if(i>=0)pcSel.splice(i,1);else{if(pcSel.length&&pcSel[0].slice(0,-1).join()!==pa.slice(0,-1).join())return msg('لایه‌ها باید داخل یک سطح/کامپ باشند');pcSel.push(pa)}
+ panels()}
+function preCompose(){
+ const s=S[cur];if(!s||!pcSel.length)return msg('اول چند لایه را از لیست انتخاب کن');
+ const d=s.data,cp=pcSel[0].slice(0,-1),arr=layersOf(d,pcSel[0]),byInd=n=>n==null?-1:arr.findIndex(x=>x.ind===n);
+ const set=new Set(pcSel.map(p=>p[p.length-1])),n0=set.size;
+ for(let ch=true;ch;){ch=false;for(const i of[...set]){const l=arr[i],add=j=>{if(j>=0&&j<arr.length&&!set.has(j)){set.add(j);ch=true}};
+  add(byInd(l.parent));if(l.tt)add(i-1);if(l.td&&arr[i+1]&&arr[i+1].tt)add(i+1);if(l.tp!=null)add(byInd(l.tp))}}
+ snap();
+ const orph=[];arr.forEach((l,i)=>{if(!set.has(i)&&l.parent!=null&&set.has(byInd(l.parent)))orph.push(i)});
+ orph.forEach(i=>setParent([...cp,i],null,true));
+ const idx=[...set].sort((a,b)=>a-b),layers=idx.map(i=>arr[i]),id='pc_'+Date.now().toString(36);
+ const host=cp.length?layerAt(d,cp):null;
+ const nl={ddd:0,ind:Math.max(0,...arr.map(x=>x.ind||0))+1,ty:0,nm:'Pre-comp '+((d.assets||[]).filter(a=>/^pc_/.test(a.id)).length+1),refId:id,sr:1,
+  ks:{o:K1(100),r:K1(0),p:K1([0,0,0]),a:K1([0,0,0]),s:K1([100,100,100])},ao:0,w:(host&&host.w)||d.w,h:(host&&host.h)||d.h,
+  ip:Math.min(...layers.map(x=>x.ip??d.ip)),op:Math.max(...layers.map(x=>x.op??d.op)),st:0,bm:0};
+ (d.assets=d.assets||[]).push({id,layers});
+ [...idx].reverse().forEach(i=>arr.splice(i,1));arr.splice(idx[0],0,nl);
+ sel=[...cp,idx[0]];pcMode=false;pcSel=[];
+ msg('Pre-comp ساخته شد ('+idx.length+' لایه)'+(set.size>n0?' | '+(set.size-n0)+' لایهٔ والد/ماسک هم اضافه شد':''));show(true)}
+$('#pc').onclick=()=>{if(!S[cur])return msg('اول یک فایل باز کنید');pcMode=!pcMode;pcSel=[];if(pcMode)msg('لایه‌ها را انتخاب کن، بعد «Pre-comp» یا «حذف»');panels()};
+$('#pccl').onclick=()=>{pcMode=false;pcSel=[];panels()};
+$('#pcok').onclick=preCompose;
+$('#pcdl').onclick=()=>{const s=S[cur];if(!s||!pcSel.length)return msg('اول چند لایه را انتخاب کن');
+ const d=s.data,cp=pcSel[0].slice(0,-1),arr=layersOf(d,pcSel[0]),set=new Set(pcSel.map(p=>p[p.length-1])),gone=[...set].map(i=>arr[i]);
+ snap();
+ arr.forEach((x,i)=>{if(set.has(i))return;if(x.parent!=null&&gone.some(g=>g.ind!=null&&g.ind===x.parent))delete x.parent;if(x.tt&&set.has(i-1)&&arr[i-1].td)delete x.tt});
+ [...set].sort((a,b)=>b-a).forEach(i=>arr.splice(i,1));
+ sel=null;pcMode=false;pcSel=[];msg(gone.length+' لایه حذف شد');show(true)};
+
+/* Lottie / TGS import as precomp */
+/* ---------- auto-repair of incomplete / broken Lottie files ---------- */
+function sanitize(j){
+ const R={fix:0,unhid:0,nulled:0};
+ j.v=j.v||'5.5.2';j.fr=+j.fr>0?+j.fr:60;j.ip=+j.ip||0;j.w=+j.w>0?+j.w:512;j.h=+j.h>0?+j.h:512;
+ j.assets=Array.isArray(j.assets)?j.assets.filter(a=>a&&typeof a==='object'):[];j.layers=Array.isArray(j.layers)?j.layers:[];
+ let mx=0;[j.layers,...j.assets.map(a=>a.layers)].forEach(a=>(a||[]).forEach(l=>{if(l&&typeof l.op==='number'&&l.op>mx)mx=l.op}));
+ if(!(j.op>j.ip)){j.op=mx>j.ip?mx:j.ip+180;R.fix++}
+ const ids=new Set(j.assets.map(a=>a.id));
+ const shp=a=>{for(let i=a.length-1;i>=0;i--){const x=a[i];if(!x||typeof x!=='object'||!x.ty){a.splice(i,1);R.fix++;continue}
+  if(x.ty==='gr'){if(!Array.isArray(x.it))x.it=[];shp(x.it);if(!x.it.some(q=>q.ty==='tr')){x.it.push({ty:'tr',p:K1([0,0]),a:K1([0,0]),s:K1([100,100]),r:K1(0),o:K1(100),sk:K1(0),sa:K1(0)});R.fix++}}
+  else if(x.ty==='sh'&&!x.ks){a.splice(i,1);R.fix++}
+  else if(x.ty==='fl'||x.ty==='st'){if(!x.c||x.c.k==null){x.c=K1([0,0,0,1]);R.fix++}if(!x.o||x.o.k==null)x.o=K1(100);if(x.ty==='st'&&(!x.w||x.w.k==null))x.w=K1(1)}}};
+ const fixL=(arr,ip,op)=>{
+  for(let i=arr.length-1;i>=0;i--)if(!arr[i]||typeof arr[i]!=='object'){arr.splice(i,1);R.fix++}
+  const used=new Set();let top=Math.max(0,...arr.map(l=>+l.ind||0));
+  arr.forEach(l=>{
+   if(l.ind==null||used.has(l.ind)){l.ind=++top;R.fix++}used.add(l.ind);
+   if(l.ty==null){l.ty=Array.isArray(l.shapes)?4:(l.refId?0:3);R.fix++}
+   if(typeof l.ip!=='number'||isNaN(l.ip)){l.ip=ip;R.fix++}
+   if(typeof l.op!=='number'||!(l.op>l.ip)){l.op=Math.max(op,l.ip+1);R.fix++}
+   if(typeof l.st!=='number')l.st=0;if(!(l.sr>0))l.sr=1;if(l.bm==null)l.bm=0;if(l.ao==null)l.ao=0;if(l.ddd==null)l.ddd=0;
+   const ks=l.ks=(l.ks&&typeof l.ks==='object')?l.ks:(R.fix++,{}),D={o:100,r:0,p:[0,0,0],a:[0,0,0],s:[100,100,100]};
+   for(const k in D)if(!ks[k]||(ks[k].k==null&&!ks[k].s)){ks[k]=K1(D[k]);R.fix++}
+   if(l.hd&&!l.td){l.hd=false;R.unhid++}
+   if(l.ty===4){if(!Array.isArray(l.shapes)){l.shapes=[];R.fix++}shp(l.shapes)}
+   if((l.ty===0||l.ty===2)&&(!l.refId||!ids.has(l.refId))){l.ty=3;delete l.refId;R.nulled++}
+   if(l.ty===0){if(!(l.w>0))l.w=j.w;if(!(l.h>0))l.h=j.h}});
+  const have=new Set(arr.map(l=>l.ind));
+  arr.forEach((l,i)=>{if(l.parent!=null&&(!have.has(l.parent)||l.parent===l.ind)){delete l.parent;R.fix++}
+   if(l.tt&&!(i>0&&arr[i-1].td)){delete l.tt;R.fix++}})};
+ fixL(j.layers,j.ip,j.op);j.assets.forEach(a=>{if(Array.isArray(a.layers))fixL(a.layers,j.ip,j.op)});
+ return R}
+function tryLoad(data){return new Promise(res=>{const c=document.createElement('div');c.style.cssText='position:fixed;left:-9999px;top:0;width:64px;height:64px';document.body.append(c);let a,done=false;
+ const fin=ok=>{if(done)return;done=true;try{a&&a.destroy()}catch(_){}c.remove();res(ok)};
+ try{a=lottie.loadAnimation({container:c,renderer:'svg',loop:false,autoplay:false,animationData:JSON.parse(JSON.stringify(data))});
+  a.addEventListener('DOMLoaded',()=>{try{a.goToAndStop(Math.min(1,Math.max(0,a.totalFrames-1)),true);fin(!!c.querySelector('svg'))}catch(_){fin(false)}});
+  a.addEventListener('data_failed',()=>fin(false));setTimeout(()=>fin(false),3000)}catch(_){fin(false)}})}
+async function ensureLoadable(d){
+ if(await tryLoad(d))return 0;
+ const L=d.layers,bad=[];
+ for(let i=0;i<L.length&&i<300;i++){const l=JSON.parse(JSON.stringify(L[i]));delete l.parent;delete l.tt;
+  if(!(await tryLoad({...d,layers:[l]})))bad.push(i)}
+ bad.reverse().forEach(i=>{const g=L.splice(i,1)[0];L.forEach(x=>{if(g.ind!=null&&x.parent===g.ind)delete x.parent})});
+ if(!bad.length||!(await tryLoad(d)))throw'فایل خراب است و قابل تعمیر نبود';
+ return bad.length}
+function syncOp(){const s=S[cur],l=s&&sel&&layerAt(s.data,sel),o=l&&l.ks&&l.ks.o,v=o&&!o.a&&typeof o.k==='number'?o.k:100;$('#opc').value=v;$('#opv').textContent=Math.round(v)+'%'}
+{const r=$('#opc');let sn=false;
+ r.oninput=()=>{const s=S[cur],l=sel&&s&&layerAt(s.data,sel);if(!l){r.value=100;return msg('اول روی لایه کلیک کن')}
+  if(!sn){snap();sn=true;if(l.ks&&l.ks.o&&l.ks.o.a)msg('انیمیشن Opacity این لایه با مقدار ثابت جایگزین شد')}
+  l.ks=l.ks||{};l.ks.o={a:0,k:+r.value};$('#opv').textContent=r.value+'%';load(true)};
+ r.onchange=()=>{sn=false}}
+async function readLottie(f){const b=new Uint8Array(await f.arrayBuffer());
+ const j=JSON.parse((b[0]===0x1f&&b[1]===0x8b)?pako.ungzip(b,{to:'string'}):new TextDecoder().decode(b));
+ if(!j||typeof j!=='object'||!Array.isArray(j.layers))throw'ساختار Lottie نامعتبر';readLottie.rep=sanitize(j);return j}
+function importComp(src,d){
+ src=JSON.parse(JSON.stringify(src));
+ const pre='imp'+Date.now().toString(36)+Math.random().toString(36).slice(2,5)+'_',idm={};
+ (src.assets||[]).forEach(a=>{idm[a.id]=pre+a.id});
+ const fix=arr=>(arr||[]).forEach(l=>{if(l.refId&&idm[l.refId])l.refId=idm[l.refId]});
+ d.assets=d.assets||[];
+ (src.assets||[]).forEach(a=>{fix(a.layers);a.id=idm[a.id];d.assets.push(a)});
+ fix(src.layers);d.assets.push({id:pre+'main',layers:src.layers});
+ if(src.fonts&&!d.fonts)d.fonts=src.fonts;if(src.chars)d.chars=(d.chars||[]).concat(src.chars);
+ return{id:pre+'main',w:src.w||512,h:src.h||512,fr:src.fr,ip:src.ip||0}}
+const scaleProp=(pr,z)=>{if(!pr)return;const f=a=>a.map((v,i)=>i<2?v*z:v);
+ if(!pr.a){if(Array.isArray(pr.k))pr.k=f(pr.k)}else pr.k.forEach(kf=>['s','e'].forEach(n=>{if(Array.isArray(kf[n]))kf[n]=f(kf[n])}))};
+function replaceLottie(src){
+ const s=S[cur],d=s.data,l=sel&&layerAt(d,sel);if(!l)throw'لایه انتخاب نشده';
+ let bb=null;try{bb=elAt(sel).baseElement.getBBox()}catch(_){}
+ snap();const m=importComp(src,d),ok=bb&&bb.width>0,z=ok?Math.max(bb.width,bb.height)/Math.max(m.w,m.h):1;
+ const ks=l.ks=l.ks||{o:K1(100),r:K1(0),p:K1([0,0,0]),a:K1([0,0,0]),s:K1([100,100,100])};
+ const a0=ks.a&&!ks.a.a&&Array.isArray(ks.a.k)?ks.a.k:[0,0,0],bc=ok?[bb.x+bb.width/2,bb.y+bb.height/2]:[a0[0],a0[1]];
+ if(!ks.a||!ks.a.a){ks.a=K1([m.w/2-(bc[0]-a0[0])/z,m.h/2-(bc[1]-a0[1])/z,0]);scaleProp(ks.s,z)}
+ ['shapes','t','sc','sw','sh','tm'].forEach(k=>delete l[k]);
+ const sr=d.fr&&m.fr?d.fr/m.fr:1;
+ Object.assign(l,{ty:0,refId:m.id,w:m.w,h:m.h,sr,st:(l.ip||0)-m.ip*sr});
+ show(true);if(autoBlink){const sp=[...sel];setTimeout(()=>doBlink([sp],true),500)}}
+function addLottie(src,name){
+ const d=S[cur].data;snap();const m=importComp(src,d),z=Math.min(d.w,d.h)/Math.max(m.w,m.h),sr=d.fr&&m.fr?d.fr/m.fr:1;
+ d.layers.unshift({ddd:0,ind:Math.max(0,...d.layers.map(x=>x.ind||0))+1,ty:0,nm:name,refId:m.id,w:m.w,h:m.h,sr,st:d.ip-m.ip*sr,
+  ks:{o:K1(100),r:K1(0),p:K1([d.w/2,d.h/2,0]),a:K1([m.w/2,m.h/2,0]),s:K1([z*100,z*100,100])},ao:0,ip:d.ip,op:d.op,bm:0});
+ sel=[0];show(true);if(autoBlink)setTimeout(()=>doBlink([[0]],true),500)}
+
+/* ---------- Gradient add / convert ---------- */
+function shapeItems(l,d){const out=[],seen=new Set();
+ const grp=arr=>{out.push(arr);arr.forEach(it=>{if(it.ty==='gr'&&it.it)grp(it.it)})};
+ const lay=x=>{if(x.shapes)grp(x.shapes);if(x.refId&&!seen.has(x.refId)){seen.add(x.refId);const a=(d.assets||[]).find(q=>q.id===x.refId);if(a&&a.layers)a.layers.forEach(lay)}};
+ lay(l);return out}
+function bboxOf(arr){let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;const pt=(x,y)=>{x0=Math.min(x0,x);y0=Math.min(y0,y);x1=Math.max(x1,x);y1=Math.max(y1,y)};
+ const v0=p=>p.a?(p.k[0]&&p.k[0].s):p.k;
+ const go=a=>a.forEach(it=>{
+  if(it.ty==='sh'&&it.ks){const k=it.ks.a?(it.ks.k[0]&&it.ks.k[0].s&&it.ks.k[0].s[0]):it.ks.k;if(k&&k.v)k.v.forEach(v=>pt(v[0],v[1]))}
+  else if((it.ty==='rc'||it.ty==='el')&&it.p&&it.s){const p=v0(it.p),s=v0(it.s);if(p&&s){pt(p[0]-s[0]/2,p[1]-s[1]/2);pt(p[0]+s[0]/2,p[1]+s[1]/2)}}
+  else if(it.ty==='sr'&&it.p&&it.or){const p=v0(it.p),r=it.or.a?(it.or.k[0]&&it.or.k[0].s[0]):it.or.k;if(p&&r){pt(p[0]-r,p[1]-r);pt(p[0]+r,p[1]+r)}}
+  else if(it.ty==='gr'&&it.it)go(it.it)});
+ go(arr);return x1>x0?[x0,y0,x1,y1]:null}
+function gradApply(mode){
+ const s=S[cur];if(!s||!sel)return msg('اول یک لایه انتخاب کن');
+ const d=s.data,l=layerAt(d,sel);let fb=null;
+ try{const b=elAt(sel).baseElement.getBBox();if(b.width>0)fb=[b.x,b.y,b.x+b.width,b.y+b.height]}catch(_){}
+ const ops=[];
+ shapeItems(l,d).forEach(arr=>{for(let i=0;i<arr.length;i++){const it=arr[i];
+  if(mode===0){if(it.ty==='gf'&&it.g&&it.g.k&&!it.g.k.a&&Array.isArray(it.g.k.k))ops.push(()=>{const k=it.g.k.k;arr[i]={ty:'fl',nm:'Fill',c:K1([k[1],k[2],k[3],1]),o:it.o,r:it.r||1,bm:it.bm||0}});continue}
+  const isFl=it.ty==='fl'&&it.c&&!it.c.a&&Array.isArray(it.c.k)&&typeof it.c.k[0]==='number',isGf=it.ty==='gf';
+  if(!isFl&&!isGf)continue;
+  ops.push(()=>{
+   const bb=bboxOf(arr)||fb||[0,0,d.w,d.h],cx=(bb[0]+bb[2])/2,cy=(bb[1]+bb[3])/2,w=bb[2]-bb[0],h=bb[3]-bb[1];
+   const s0=mode===1?[cx,bb[1]]:[cx,cy],e0=mode===1?[cx,bb[3]]:[cx+Math.max(w,h)/2,cy];
+   if(isFl){const c=it.c.k,dk=c.slice(0,3).map(v=>v*.5);
+    arr[i]={ty:'gf',nm:'Gradient Fill',o:it.o,r:it.r||1,bm:it.bm||0,t:mode,s:K1(s0),e:K1(e0),g:{p:2,k:{a:0,k:[0,c[0],c[1],c[2],1,dk[0],dk[1],dk[2]]}},h:K1(0),a:K1(0)}}
+   else{it.t=mode;it.s=K1(s0);it.e=K1(e0);if(mode===2){it.h=it.h||K1(0);it.a=it.a||K1(0)}}})}});
+ if(!ops.length)return msg(mode===0?'گرادینتی در این لایه نیست':'رنگ ساده‌ای (بدون انیمیشن) پیدا نشد');
+ snap();ops.forEach(f=>f());load(true);panels();
+ msg(mode===0?'به رنگ ساده تبدیل شد':'گرادینت ساخته شد | از G1 و G2 رنگ‌ها را عوض کن')}
+function gradRotate(){
+ const s=S[cur];if(!s||!sel)return;const d=s.data,l=layerAt(d,sel),ops=[];
+ shapeItems(l,d).forEach(arr=>arr.forEach(it=>{if(it.ty==='gf'&&it.s&&it.e&&!it.s.a&&!it.e.a)ops.push(()=>{
+  const a=it.s.k,b=it.e.k,mx=(a[0]+b[0])/2,my=(a[1]+b[1])/2,vx=b[0]-mx,vy=b[1]-my,c=Math.SQRT1_2,rx=vx*c-vy*c,ry=vx*c+vy*c;
+  it.s.k=[mx-rx,my-ry];it.e.k=[mx+rx,my+ry]})}));
+ if(!ops.length)return msg('گرادینتی در این لایه نیست');snap();ops.forEach(f=>f());load(true);panels()}
+
+/* ---------- Flip ---------- */
+const flipS=(pr,i)=>{const f=a=>a.map((v,j)=>j===i?-v:v);if(!pr.a)pr.k=f(pr.k);else pr.k.forEach(kf=>['s','e'].forEach(n=>{if(Array.isArray(kf[n]))kf[n]=f(kf[n])}))};
+function flipLayer(i){
+ const s=S[cur],d=s&&s.data,l=sel&&layerAt(d,sel);if(!l)return msg('اول روی لایه کلیک کن');
+ let c;try{const b=elAt(sel).baseElement.getBBox();if(!(b.width>0||b.height>0))throw 0;c=[b.x+b.width/2,b.y+b.height/2]}catch(_){return msg('وسط لایه پیدا نشد')}
+ if(l.ty===4&&l.shapes){snap();let w=l.shapes[0];
+  if(!(l.shapes.length===1&&w.nm==='__xf')){w={ty:'gr',nm:'__xf',it:[...l.shapes,{ty:'tr',p:K1([0,0]),a:K1([0,0]),s:K1([100,100]),r:K1(0),o:K1(100),sk:K1(0),sa:K1(0)}]};l.shapes=[w]}
+  const t=w.it[w.it.length-1];t.s.k=t.s.k.map((v,j)=>j===i?-v:v);t.p.k=t.p.k.map((v,j)=>j===i?2*c[i]-v:v)}
+ else{const ks=l.ks;if(!ks||!ks.a||ks.a.a||!Array.isArray(ks.a.k)||!ks.s)return msg('این لایه انیمیشن دارد');snap();
+  ks.a.k=ks.a.k.map((v,j)=>j===i?2*c[i]-v:v);flipS(ks.s,i)}
+ X.c=null;load(true);msg(i?'برعکس شد (بالا/پایین)':'برعکس شد (چپ/راست)')}
+{const b=$('#xfl');let tm=null,fired=false;
+ b.onpointerdown=e=>{e.preventDefault();fired=false;tm=setTimeout(()=>{fired=true;tm=null;flipLayer(1)},500)};
+ const end=()=>{if(tm){clearTimeout(tm);tm=null;if(!fired)flipLayer(0)}};
+ b.onpointerup=end;b.onpointerleave=()=>{if(tm){clearTimeout(tm);tm=null}};b.onpointercancel=b.onpointerleave}
+
+/* ---------- Split one shape layer into many layers ---------- */
+const clone=o=>JSON.parse(JSON.stringify(o));
+function leafUnits(items,chain,out){
+ const body=items.filter(x=>x.ty!=='tr');
+ if(!body.some(x=>x.ty==='gr'&&x.it)){out.push({chain,items:body});return}
+ let run=[];const flush=()=>{if(run.length){out.push({chain,items:run});run=[]}};
+ body.forEach(x=>{if(x.ty==='gr'&&x.it){flush();leafUnits(x.it,[...chain,x],out)}else run.push(x)});flush()}
+const unitCount=l=>{if(!l||l.ty!==4||!l.shapes||l.tt||l.td)return 0;const u=[];leafUnits(l.shapes,[],u);return u.length};
+function splitLayer(path,noSnap){
+ const s=S[cur],d=s.data,arr=layersOf(d,path),i=path[path.length-1],l=arr[i];
+ if(!l||l.ty!==4||!l.shapes)return 0;
+ const units=[];leafUnits(l.shapes,[],units);if(units.length<2||units.length>600)return 0;
+ if(!noSnap)snap();
+ const idTr=()=>({ty:'tr',p:K1([0,0]),a:K1([0,0]),s:K1([100,100]),r:K1(0),o:K1(100),sk:K1(0),sa:K1(0)});
+ const build=u=>{let cur=u.items.map(clone);for(let k=u.chain.length-1;k>=0;k--){const g=u.chain[k],tr=g.it.find(x=>x.ty==='tr');cur=[{ty:'gr',nm:g.nm,it:[...cur,tr?clone(tr):idTr()]}]}return cur};
+ let top=Math.max(0,...arr.map(x=>x.ind||0));
+ const nid=l.ind!=null?l.ind:++top,ks=l.ks||{o:K1(100),r:K1(0),p:K1([0,0,0]),a:K1([0,0,0]),s:K1([100,100,100])};
+ const holder={ddd:0,ind:nid,ty:3,nm:(l.nm||'Layer')+' (move)',sr:l.sr||1,ks,ao:0,ip:l.ip,op:l.op,st:l.st||0,bm:0};
+ if(l.parent!=null)holder.parent=l.parent;
+ const pieces=units.map((u,k)=>{const g=u.chain.length?u.chain[u.chain.length-1].nm:null;
+  const p={ddd:0,ind:++top,ty:4,nm:(k+1)+'. '+(g||l.nm||'Part'),parent:nid,sr:l.sr||1,ks:{o:ks.o?clone(ks.o):K1(100),r:K1(0),p:K1([0,0,0]),a:K1([0,0,0]),s:K1([100,100,100])},ao:0,shapes:build(u),ip:l.ip,op:l.op,st:l.st||0,bm:l.bm||0};
+  if(l.hasMask||l.masksProperties){p.hasMask=l.hasMask;p.masksProperties=clone(l.masksProperties||[])}
+  if(l.ef)p.ef=clone(l.ef);return p});
+ arr.splice(i,1,...pieces,holder);return pieces.length}
+$('#sp').onclick=()=>{const s=S[cur];if(!s)return msg('اول یک فایل باز کنید');const d=s.data;
+ let path=sel;if(!path){const t=d.layers.map((l,i)=>unitCount(l)>1?i:-1).filter(i=>i>=0);if(t.length===1)path=[t[0]]}
+ if(!path)return msg('اول لایه‌ای که می‌خوای تقسیم بشه رو انتخاب کن');
+ const n=splitLayer(path);if(!n)return msg('این لایه قابل تقسیم نیست (بیش از یک بخش ندارد، ماسک دارد، یا خیلی زیاد است)');
+ sel=null;show(true);msg('✂ '+n+' لایه ساخته شد | حالا روی هر بخش (مثلاً چشم) کلیک کن')};
+
+/* ---------- Blink (AI eye detection) ---------- */
+let autoBlink=true;try{autoBlink=localStorage.getItem('autoBlink')!=='0'}catch(_){}
+const updAb=()=>{$('#ab').textContent='🤖 پلک خودکار: '+(autoBlink?'روشن':'خاموش')};updAb();
+$('#ab').onclick=()=>{autoBlink=!autoBlink;try{localStorage.setItem('autoBlink',autoBlink?'1':'0')}catch(_){}updAb()};
+function compInfo(path){
+ try{const e=elAt(path),svg=anim&&anim.renderer&&anim.renderer.svgElement;if(!e||!e.baseElement||!svg)return null;
+  const a=svg.getScreenCTM(),b=e.baseElement.getScreenCTM();if(!a||!b)return null;
+  const m=a.inverse().multiply(b),bb=e.baseElement.getBBox();if(!(bb.width>0||bb.height>0))return null;
+  const M=[m.a,m.b,m.c,m.d,m.e,m.f],pts=[[bb.x,bb.y],[bb.x+bb.width,bb.y],[bb.x,bb.y+bb.height],[bb.x+bb.width,bb.y+bb.height]].map(p=>[M[0]*p[0]+M[2]*p[1]+M[4],M[1]*p[0]+M[3]*p[1]+M[5]]);
+  const xs=pts.map(p=>p[0]),ys=pts.map(p=>p[1]);
+  return{M,box:[Math.min(...xs),Math.min(...ys),Math.max(...xs),Math.max(...ys)]}}catch(_){return null}}
+function blinkCands(d,roots){const list=[];
+ const visit=(l,path)=>{if(!l||l.hd)return;
+  if(l.ty===4&&l.shapes){const ci=compInfo(path);if(ci){const b=ci.box;list.push({path,l,ci,area:(b[2]-b[0])*(b[3]-b[1])/(d.w*d.h)})}}
+  if(l.refId&&path.length<4){const a=(d.assets||[]).find(q=>q.id===l.refId);if(a&&a.layers)a.layers.forEach((x,j)=>visit(x,[...path,j]))}};
+ if(roots)roots.forEach(p=>visit(layerAt(d,p),p));else d.layers.forEach((l,i)=>visit(l,[i]));
+ const c=list.filter(x=>x.area<0.2&&x.area>0.00005).sort((a,b)=>a.area-b.area).slice(0,140);c.forEach((x,i)=>x.id=i+1);return c}
+async function snapPng(){try{const svg=anim.renderer.svgElement,cl=svg.cloneNode(true);cl.setAttribute('width',384);cl.setAttribute('height',384);cl.removeAttribute('style');cl.setAttribute('xmlns','http://www.w3.org/2000/svg');
+ const img=new Image();await new Promise((ok,no)=>{img.onload=ok;img.onerror=no;img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(new XMLSerializer().serializeToString(cl))});
+ const cv=document.createElement('canvas');cv.width=cv.height=384;const g=cv.getContext('2d');g.fillStyle='#ddd';g.fillRect(0,0,384,384);g.drawImage(img,0,0,384,384);
+ return await new Promise(r=>cv.toBlob(r,'image/png'))}catch(_){return null}}
+async function blinkAI(c,d){
+ let sample=null;try{if(typeof claude!=='undefined'&&claude&&typeof claude.use==='function')sample=await claude.use('sample')}catch(_){}
+ if(!sample)return null;
+ let images;try{const lim=await sample.limits();if(lim&&lim.images){const b=await snapPng();if(b)images=[b]}}catch(_){}
+ const info=c.map(x=>{const b=x.ci.box,f=shapeItems(x.l,d).flat().find(it=>it.ty==='fl'&&it.c&&!it.c.a&&Array.isArray(it.c.k)&&typeof it.c.k[0]==='number');
+  return{id:x.id,name:x.l.nm||'',box:[b[0]/d.w,b[1]/d.h,(b[2]-b[0])/d.w,(b[3]-b[1])/d.h].map(v=>+v.toFixed(3)),fill:f?hex(f.c.k.slice(0,3)):null}});
+ const prompt=(images?'The attached image shows a cartoon character rendered from a Lottie animation. ':'')+
+ 'Below is a JSON list of the animation\'s shape layers: id, name, box=[x,y,w,h] as fractions of the canvas (origin top-left), and main fill color.\n'+
+ 'Task: find the layers that draw the character\'s EYES (eyeball white, iris, pupil, eyelid, eye highlight) so the eyes can blink by being squashed vertically. '+
+ 'Return one array per eye, containing ALL layer ids that belong to that eye (white + iris + pupil + highlight...). If one layer draws both eyes, give it as its own group. '+
+ 'Do NOT include eyebrows, glasses, hair, mouth, nose, ears, the head/skin base or any big shape. If there are no visible eyes, return an empty list.\n'+
+ 'Reply with ONLY JSON like {"eyes":[[3,7],[4,8]]}.\nLayers: '+JSON.stringify(info);
+ const r=await sample.json(prompt,{images,modelTier:'default'});
+ const arr=Array.isArray(r)?r:(r&&r.eyes)||[];
+ return arr.map(g=>(Array.isArray(g)?g:[g]).map(id=>c.find(x=>x.id===id)).filter(Boolean)).filter(g=>g.length)}
+function blinkHeur(c){const g=c.filter(x=>/eye|pupil|iris|lid|چشم|مردمک/i.test(x.l.nm||'')&&!/brow|ابرو|glass|عینک/i.test(x.l.nm||''));return g.length?[g]:[]}
+function blinkKf(d){const fr=d.fr||30,ip=d.ip||0,op=d.op,cl=Math.max(2,Math.round(fr*.07)),E={i:{x:[.667,.667],y:[1,1]},o:{x:[.333,.333],y:[0,0]}},times=[],dur=op-ip;
+ if(dur<fr*1.5)times.push(Math.round(ip+dur*.35));else for(let t=ip+fr;t+cl*2<op-1;t+=fr*3)times.push(Math.round(t));
+ const kf=[],push=(t,y)=>kf.push({t,s:[100,y],...E});push(ip,100);
+ times.forEach(t=>{if(t>kf[kf.length-1].t)push(t,100);push(t+cl,6);push(t+2*cl,100)});
+ if(kf[kf.length-1].t<op)push(op,100);const l=kf[kf.length-1];delete l.i;delete l.o;return kf}
+function applyBlink(d,groups){
+ snap();let n=0;
+ groups.forEach(g=>{const ys=[];g.forEach(x=>ys.push(x.ci.box[1],x.ci.box[3]));
+  const cx=g.reduce((a,x)=>a+(x.ci.box[0]+x.ci.box[2])/2,0)/g.length,cy=(Math.min(...ys)+Math.max(...ys))/2;
+  g.forEach(x=>{const l=x.l,m=minv(x.ci.M),lx=m[0]*cx+m[2]*cy+m[4],ly=m[1]*cx+m[3]*cy+m[5];
+   let it=l.shapes;if(it.length===1&&it[0].nm==='blink')it=it[0].it.slice(0,-1);
+   l.shapes=[{ty:'gr',nm:'blink',it:[...it,{ty:'tr',p:K1([lx,ly]),a:K1([lx,ly]),s:{a:1,k:blinkKf(d)},r:K1(0),o:K1(100),sk:K1(0),sa:K1(0)}]}];n++})});
+ return n}
+let blinkBusy=false;
+async function doBlink(roots,silent){
+ const s=S[cur];if(!s||!anim)return silent||msg('اول یک فایل باز کنید');
+ if(blinkBusy)return;const d=s.data;let c=blinkCands(d,roots);
+ if(c.length<4&&!roots){const tg=d.layers.map((l,i)=>unitCount(l)>1?i:-1).filter(i=>i>=0);
+  if(tg.length&&tg.length<=3){snap();let n=0;[...tg].reverse().forEach(i=>{n+=splitLayer([i],true)});
+   if(n){sel=null;load(true);panels();await new Promise(r=>setTimeout(r,300));c=blinkCands(d,roots);msg('✂ تصویر به '+n+' لایه تقسیم شد')}}}
+ if(!c.length)return silent||msg('لایهٔ شکلی برای تشخیص چشم پیدا نشد');
+ blinkBusy=true;msg('🤖 در حال پیدا کردن چشم‌ها…');
+ try{let groups=null,how='ai';
+  try{groups=await blinkAI(c,d)}catch(e){groups=null}
+  if(!groups||!groups.length){groups=blinkHeur(c);how='name'}
+  if(S[cur]!==s)return;
+  if(!groups.length)return msg('چشم پیدا نشد. «☑ انتخاب چندتایی» را بزن، لایه‌های چشم را انتخاب کن و «👁 پلک» را بزن');
+  applyBlink(d,groups);load(true);panels();msg('👁 پلک زدن به '+groups.length+' چشم اضافه شد'+(how==='name'?' (بر اساس اسم لایه‌ها)':''))}
+ finally{blinkBusy=false}}
+$('#bl').onclick=()=>doBlink(null,false);
+$('#pcbl').onclick=()=>{const s=S[cur];if(!s||!pcSel.length)return msg('اول لایه‌های چشم را انتخاب کن');const d=s.data,g=[];
+ pcSel.forEach(p=>{const l=layerAt(d,p),ci=compInfo(p);if(l&&l.ty===4&&l.shapes&&ci)g.push({l,ci})});
+ if(!g.length)return msg('فقط لایه‌های شکلیِ قابل‌دیدن پشتیبانی می‌شوند');
+ applyBlink(d,[g]);pcMode=false;pcSel=[];load(true);panels();msg('👁 پلک زدن به '+g.length+' لایه اضافه شد')};
+
+/* ---------- Layer timeline (trim / move bars), z-order, playhead ---------- */
+const clampN=(v,a,b)=>Math.min(b,Math.max(a,v));
+const appX0=el=>{const r=el.getBoundingClientRect(),a=$('#app').getBoundingClientRect();return matchMedia('(orientation:portrait)').matches?r.top-a.top:r.left-a.left};
+function phLine(){const p=$('#ph'),d=S[cur]&&S[cur].data,t=$('#rows2 .trk');
+ if(!p||!d||!anim||!t){if(p)p.style.display='none';return}
+ const tot=Math.max(1,d.op-d.ip);p.style.display='block';const fx=clampN(anim.currentFrame/tot,0,1)*t.offsetWidth;p.style.left=(t.offsetLeft+fx)+'px';const mk=$('#rows2 .pmk');if(mk)mk.style.left=fx+'px'}
+function scrubStart(e,t){
+ if(!anim||pcMode)return;
+ const go=ev=>{const W=Math.max(1,t.offsetWidth),f=clampN((loc(ev.clientX,ev.clientY)[0]-appX0(t))/W,0,1);
+  stopP();anim.goToAndStop(f*(anim.totalFrames-1),true);ph()};
+ go(e);
+ const mv=ev=>go(ev),up=()=>{removeEventListener('pointermove',mv);removeEventListener('pointerup',up);removeEventListener('pointercancel',up)};
+ addEventListener('pointermove',mv);addEventListener('pointerup',up);addEventListener('pointercancel',up)}
+function updLR(){const s=S[cur],l=s&&sel&&layerAt(s.data,sel);$('#lr').textContent=l?Math.round(l.ip)+' → '+Math.round(l.op):''}
+function mkBar(l,d,pa){
+ const tot=Math.max(1,d.op-d.ip),b=document.createElement('div'),lab=document.createElement('span'),hl=document.createElement('div'),hr=document.createElement('div');
+ b.className='bar ty'+l.ty+(l.hd?' hid':'');hl.className='hl';hr.className='hr';b.append(hl,hr,lab);
+ const paint=()=>{const a=clampN((l.ip-d.ip)/tot*100,0,100),z=clampN((l.op-d.ip)/tot*100,0,100);
+  b.style.left=a+'%';b.style.width=Math.max(.5,z-a)+'%';lab.textContent=Math.round(l.ip)+'–'+Math.round(l.op)};
+ paint();
+ const drag=(el,mode)=>{el.onpointerdown=e=>{
+  e.preventDefault();e.stopPropagation();
+  if(pcMode){togglePc(pa);return}
+  const trk=b.parentNode,W=Math.max(40,trk.offsetWidth),x0=loc(e.clientX,e.clientY)[0],ip0=l.ip,op0=l.op;let did=false;
+  try{el.setPointerCapture(e.pointerId)}catch(_){}
+  const mv=ev=>{const df=Math.round((loc(ev.clientX,ev.clientY)[0]-x0)/W*tot);if(!df&&!did)return;
+   if(!did){snap();did=true;sel=pa}
+   let a=ip0,z=op0;
+   if(mode==='l')a=clampN(ip0+df,d.ip,op0-1);
+   else if(mode==='r')z=clampN(op0+df,ip0+1,d.op);
+   else{const len=op0-ip0;a=clampN(ip0+df,d.ip,Math.max(d.ip,d.op-len));z=a+len}
+   l.ip=a;l.op=z;paint();$('#lr').textContent=Math.round(a)+' → '+Math.round(z)};
+  const up=()=>{el.removeEventListener('pointermove',mv);el.removeEventListener('pointerup',up);el.removeEventListener('pointercancel',up);
+   if(did)load(true);else sel=pa;panels()};
+  el.addEventListener('pointermove',mv);el.addEventListener('pointerup',up);el.addEventListener('pointercancel',up)}};
+ drag(hl,'l');drag(hr,'r');drag(b,'m');
+ return b}
+function setEdge(which){
+ const s=S[cur],l=s&&sel&&layerAt(s.data,sel);if(!l||!anim)return msg('اول روی یک لایه کلیک کن');
+ const d=s.data,f=d.ip+Math.round(anim.currentFrame);snap();
+ if(which==='in')l.ip=clampN(f,d.ip,l.op-1);else l.op=clampN(f+1,l.ip+1,d.op);
+ load(true);panels()}
+function moveLayer(dir,all){
+ const s=S[cur];if(!s||!sel)return msg('اول روی یک لایه کلیک کن');
+ const d=s.data,arr=layersOf(d,sel),i=sel[sel.length-1];
+ const bs=k=>(arr[k]&&arr[k].tt&&k>0&&arr[k-1].td)?k-1:k,be=k=>(arr[k]&&arr[k].td&&arr[k+1]&&arr[k+1].tt)?k+1:k;
+ let a=bs(i),b=be(i);const off=i-a;let moved=0;
+ for(;;){
+  if(dir<0){if(a<=0)break;const pa=bs(a-1),n=b-a+1;if(!moved)snap();const blk=arr.splice(a,n);arr.splice(pa,0,...blk);a=pa;b=pa+n-1}
+  else{if(b>=arr.length-1)break;const nb=be(b+1),m=nb-b,n=b-a+1;if(!moved)snap();const blk=arr.splice(a,n);arr.splice(a+m,0,...blk);a=a+m;b=a+n-1}
+  moved++;if(!all)break}
+ if(!moved)return msg(dir<0?'این لایه از قبل بالاترین است':'این لایه از قبل پایین‌ترین است');
+ sel=[...sel.slice(0,-1),a+off];show(true)}
+$('#mU').onclick=()=>moveLayer(-1,false);$('#mD').onclick=()=>moveLayer(1,false);
+$('#mT').onclick=()=>moveLayer(-1,true);$('#mB').onclick=()=>moveLayer(1,true);
+$('#tI').onclick=()=>setEdge('in');$('#tO').onclick=()=>setEdge('out');
+
+/* ---------- AE-style timeline: ruler, zoom, name-column width ---------- */
+let TZ=1,NW=118;try{TZ=+localStorage.getItem('tz')||1;NW=+localStorage.getItem('nw')||118}catch(_){}
+const saveTl=()=>{try{localStorage.setItem('tz',TZ);localStorage.setItem('nw',NW)}catch(_){}};
+function mkListHead(){const r=document.createElement('div'),n=document.createElement('div');r.className='row rl';n.className='nm';n.style.paddingLeft='6px';n.textContent='Layer Name';r.append(n);return r}
+function mkRuler(d,tw){
+ const tot=Math.max(1,d.op-d.ip),ppf=tw/tot,r=document.createElement('div'),t=document.createElement('div'),z=document.createElement('div');
+ r.className='row rl';t.className='trk';z.className='rz';
+ const bz=(txt,f)=>{const b=document.createElement('button');b.textContent=txt;b.title='زوم تایم‌لاین';b.onpointerdown=e=>e.stopPropagation();b.onclick=()=>{TZ=clampN(TZ*f,1,12);saveTl();panels()};return b};
+ z.append(bz('−',1/1.5),bz('+',1.5));t.append(z);
+ t.onpointerdown=e=>scrubStart(e,t);
+ const st=[1,2,5,10,15,20,30,60,120,300].find(s=>s*ppf>=38)||300;
+ for(let f=0;f<=tot;f+=st){const k=document.createElement('i');k.className='tk';k.style.left=(f*ppf)+'px';k.textContent=Math.round(d.ip+f);t.append(k)}
+ const m=document.createElement('div');m.className='pmk';t.append(m);
+ r.append(t);return r}
+{const A=$('#tl'),B=$('#tl2');let lock=false;const sy=(a,b)=>a.addEventListener('scroll',()=>{if(lock)return;if(b.scrollTop!==a.scrollTop){lock=true;b.scrollTop=a.scrollTop;requestAnimationFrame(()=>{lock=false})}});sy(A,B);sy(B,A)}
+{let lw=-1;new ResizeObserver(()=>{const w=$('#tl2').clientWidth;if(Math.abs(w-lw)>2){lw=w;requestAnimationFrame(()=>{try{panels()}catch(_){}})}}).observe($('#tl2'))}
+/* vertical splitter between Colors and Layers (right column) */
+{const rc=$('#RC');let H=null;try{H=JSON.parse(localStorage.getItem('rch')||'null')}catch(_){}
+ const sp=document.createElement('div');sp.className='sp hz';rc.append(sp);
+ const ap=()=>{const h=rc.offsetHeight||300;if(H==null)H=Math.round(h*.28);H=clampN(Math.round(H),0,Math.max(0,h-70));
+  rc.style.setProperty('--rh',H+'px');sp.style.top=Math.max(0,H+1-9)+'px';try{localStorage.setItem('rch',JSON.stringify(H))}catch(_){}};
+ sp.onpointerdown=e=>{e.preventDefault();try{sp.setPointerCapture(e.pointerId)}catch(_){}
+  const y0=loc(e.clientX,e.clientY)[1],h0=H;
+  const mv=ev=>{H=h0+loc(ev.clientX,ev.clientY)[1]-y0;ap()};
+  const up=()=>{sp.removeEventListener('pointermove',mv);sp.removeEventListener('pointerup',up);sp.removeEventListener('pointercancel',up);if(H<30)H=0;ap()};
+  sp.addEventListener('pointermove',mv);sp.addEventListener('pointerup',up);sp.addEventListener('pointercancel',up)};
+ new ResizeObserver(ap).observe(rc);ap()}
+/* bottom dock (timeline) height splitter */
+{const app=$('#app'),dock=$('#lyw'),sp=$('#spB');let H=null;try{H=JSON.parse(localStorage.getItem('lyh')||'null')}catch(_){}
+ const ap=()=>{const h=app.offsetHeight||360;if(H==null)H=Math.round(h*.36);H=clampN(Math.round(H),44,Math.max(60,h-34-38-110));dock.style.setProperty('--th',H+'px');try{localStorage.setItem('lyh',JSON.stringify(H))}catch(_){}};
+ sp.onpointerdown=e=>{e.preventDefault();try{sp.setPointerCapture(e.pointerId)}catch(_){}
+  const y0=loc(e.clientX,e.clientY)[1],h0=H;
+  const mv=ev=>{H=h0-(loc(ev.clientX,ev.clientY)[1]-y0);ap()};
+  const up=()=>{sp.removeEventListener('pointermove',mv);sp.removeEventListener('pointerup',up);sp.removeEventListener('pointercancel',up);ap()};
+  sp.addEventListener('pointermove',mv);sp.addEventListener('pointerup',up);sp.addEventListener('pointercancel',up)};
+ new ResizeObserver(ap).observe(app);ap()}
+
+function load(keep){
+ const s=S[cur];let f=0;if(anim){f=keep?anim.currentFrame:0;anim.destroy();anim=null}
+ $('#pv').innerHTML=s?'':'<p class="e">فایل JSON / TGS / SVG را باز کنید</p>';
+ if(!s)return;
+ anim=lottie.loadAnimation({container:$('#pv'),renderer:'svg',loop:true,autoplay:false,animationData:JSON.parse(JSON.stringify(s.data))});
+ anim.addEventListener('enterFrame',ph);anim.addEventListener('data_failed',()=>msg('خطا: فایل قابل نمایش نیست'));
+ const go=()=>{playing?anim.goToAndPlay(f,true):anim.goToAndStop(f,true);ph();hi()};
+ anim.isLoaded?go():anim.addEventListener('DOMLoaded',go)}
+function panels(){
+ const s=S[cur],cols=$('#cols'),rows=$('#rows'),rows2=$('#rows2'),p=$('#ph');cols.innerHTML='';rows.replaceChildren();rows2.replaceChildren(p);$('#pcb').classList.toggle('on',pcMode);$('#pc').classList.toggle('on',pcMode);$('#pct').textContent=pcSel.length+' لایه انتخاب شده';
+ [...$('#sl').children].forEach((b,i)=>{b.className=(i===cur?'on ':'')+(S[i]?'full':'');b.title=S[i]?S[i].name:'خالی'});
+ if(!s){$('#info').textContent='';$('#cn').textContent='';return}
+ const d=s.data;$('#cn').textContent=s.name||'';$('#info').textContent=`${d.w}×${d.h} | ${d.fr}fps | ${Math.round(d.op-d.ip)}f`;
+ const groups=new Map(),sl=sel&&layerAt(d,sel);if(!sl)cols.innerHTML='<p class="e">روی لایه در پیش‌نمایش یا لیست بزن تا رنگ‌هایش بیاید</p>';else walk([sl,sl.refId?(d.assets||[]).find(a=>a.id===sl.refId):null],o=>{
+  if((o.ty==='fl'||o.ty==='st')&&o.c&&o.c.a===0&&typeof o.c.k[0]==='number')add(o.c.k,0,'');
+  if((o.ty==='gf'||o.ty==='gs')&&o.g&&o.g.k&&o.g.k.a===0)for(let i=0;i<o.g.p;i++)add(o.g.k.k,i*4+1,'G'+(i+1)+' ')});renderCols();
+ function add(arr,i,tag){const k=hex(arr.slice(i,i+3));if(!groups.has(k))groups.set(k,{list:[],g:0,n:0});const o=groups.get(k);o.list.push([arr,i]);o.n++;if(tag)o.g++}
+ function renderCols(){
+  if(sl){const bar=document.createElement('div');bar.className='gb';
+   [['🌈 خطی',1],['🌈 شعاعی',2],['↻',-1],['ساده',0]].forEach(([t,m])=>{const b=document.createElement('button');b.textContent=t;b.onclick=()=>m<0?gradRotate():gradApply(m);bar.append(b)});cols.append(bar)}
+  groups.forEach((o,k)=>{const r=document.createElement('div');r.className='c';const inp=document.createElement('input');inp.type='color';inp.value=k;
+  const lab=v=>(o.g===o.n?'G ':'')+v+(o.n>1?' ×'+o.n:'');
+  inp.onchange=()=>inp._p=0;
+  inp.oninput=()=>{if(!inp._p){snap();inp._p=1}const c=unhex(inp.value);o.list.forEach(([arr,i])=>{arr[i]=c[0];arr[i+1]=c[1];arr[i+2]=c[2]});h.textContent=lab(inp.value);load(true)};
+  const h=document.createElement('span');h.textContent=lab(k);r.append(inp,h);cols.append(r)})}
+ const tw=Math.max(120,Math.round(($('#tl2').clientWidth-2)*TZ));rows2.style.setProperty('--tw',tw+'px');rows.append(mkListHead());rows2.insertBefore(mkRuler(d,tw),p);
+ const tot=d.op-d.ip,key=sel&&sel.join();
+ const rec=(arr,path,dep)=>arr.forEach((l,i)=>{const pa=[...path,i],pk=pa.join(),r=document.createElement('div');r.className='row'+(pk===key?' sel':'')+(pcSel.some(q=>q.join()===pk)?' pc':'');r._pa=pa;
+  const rpar=realParent(arr,l),w=document.createElement('div');w.className='nm';
+  const pw=document.createElement('button');pw.className='pw'+(rpar?' lk':'');pw.textContent='🌀';pw.title=rpar?'متصل به: '+(rpar.nm||'#'+rpar.ind)+' (بزن تا قطع شود)':'بگیر و روی لایهٔ والد رها کن';
+  pw.onpointerdown=e=>pickWhip(e,pa,l,arr,pw);
+  const n=document.createElement('span');n.style.paddingLeft=(4+dep*10)+'px';n.textContent=(l.hd?'🚫 ':'👁 ')+(i+1)+' '+(isBridge(l)?'🔗 ':'')+(l.nm||'Layer '+(l.ind||i+1))+(rpar?' ↳ '+(rpar.nm||'#'+rpar.ind):'');
+  n.onclick=e=>{if(pcMode){togglePc(pa);return}if(e.offsetX<26){snap();l.hd=!l.hd;load(true)}else sel=pa;panels()};
+  const t=document.createElement('div');t.className='trk';t.append(mkBar(l,d,pa));t.onpointerdown=e=>{if(e.target===t)scrubStart(e,t)};
+  const r2=document.createElement('div');r2.className=r.className;r2.append(t);
+  const cs=document.createElement('i');cs.className='lc ty'+l.ty;w.append(pw,cs,n);r.append(w);rows.append(r);rows2.insertBefore(r2,p);
+  if(l.refId&&dep<3){const a=(d.assets||[]).find(a=>a.id===l.refId);if(a&&a.layers)rec(a.layers,pa,dep+1)}});
+ rec(d.layers,[],0);hi();ph();syncOp();updLR()}
+const show=k=>{load(k);panels()};
+{const sl=$('#sl');for(let i=0;i<8;i++){const b=document.createElement('button');b.textContent=i+1;b.onclick=()=>{cur=i;sel=null;pcMode=false;pcSel=[];show(false)};sl.append(b)}}
+const stopP=()=>{playing=false;$('#pl').textContent='▶';anim&&anim.pause()};
+$('#sk').oninput=e=>{if(!anim)return;stopP();anim.goToAndStop(e.target.value/1000*(anim.totalFrames-1),true);ph()};
+const step=n=>{if(!anim)return;stopP();anim.goToAndStop(Math.min(anim.totalFrames-1,Math.max(0,Math.round(anim.currentFrame)+n)),true);ph()};
+$('#sb').onclick=()=>step(-1);$('#sf').onclick=()=>step(1);
+$('#pl').onclick=()=>{if(!anim)return;playing=!playing;playing?anim.play():anim.pause();$('#pl').textContent=playing?'⏸':'▶'};
+
+
+/* ---------- files ---------- */
+$('#op').onclick=()=>$('#f1').click();$('#rp').onclick=()=>!S[cur]?msg('اول یک فایل باز کنید'):!sel?msg('اول روی لایه‌ای که می‌خوای عوض بشه کلیک کن'):$('#f2').click();
+$('#f1').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;
+ const ext=f.name.split('.').pop().toLowerCase(),base=f.name.replace(/\.[^.]+$/,'');
+ try{let data,note='';
+  if(ext==='svg')data=newLottie(svgToShapes(await f.text()),base);
+  else{data=await readLottie(f);const r=readLottie.rep,bad=await ensureLoadable(data),p=[];
+   if(r.fix)p.push(r.fix+' مورد ناقص اصلاح شد');if(r.unhid)p.push(r.unhid+' لایهٔ مخفی/قفل آشکار شد');if(r.nulled)p.push(r.nulled+' لایهٔ بدون منبع به لایهٔ خالی تبدیل شد');if(bad)p.push(bad+' لایهٔ خراب حذف شد');
+   if(p.length)note='🛠 تعمیر خودکار: '+p.join(' | ')}
+  if(!data.layers)throw'ساختار Lottie نامعتبر';
+  S[cur]={name:base,data,h:[],r:[]};sel=null;pcMode=false;pcSel=[];playing=false;$('#pl').textContent='▶';show(false);if(note)msg(note)}catch(x){msg('خطا: '+x)}};
+$('#f2').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;
+ try{if(!/\.svg$/i.test(f.name)){replaceLottie(await readLottie(f));return}const sh=svgToShapes(await f.text()),d=S[cur].data,l=sel&&layerAt(d,sel);
+  if(!l)throw'لایه انتخاب نشده';
+  let bb=null;try{let els=anim.renderer.elements,el;for(const i of sel){el=els[i];els=el.elements}bb=el.baseElement.getBBox()}catch(_){}
+  if(bb&&bb.width>0){const z=Math.max(bb.width,bb.height)/400;sh.forEach(g=>{const t=g.it[g.it.length-1];t.s.k=[z*100,z*100];t.p.k=[bb.x+bb.width/2,bb.y+bb.height/2]})}
+  snap();l.ty=4;l.shapes=sh;['refId','sw','sh','sc','w','h','tm'].forEach(k=>delete l[k]);
+  show(true)}catch(x){msg('خطا: '+x)}};
+async function dl(data,name,fb){const D=(typeof claude!=='undefined'&&claude&&typeof claude.use==='function')?await Promise.resolve().then(()=>claude.use('downloads')).catch(()=>null):null;if(!D){
+ const bl=data instanceof Blob?data:new Blob([data]);
+ try{const fl=new File([bl],name,{type:bl.type||'application/octet-stream'});if(navigator.canShare&&navigator.canShare({files:[fl]})){await navigator.share({files:[fl],title:name});return msg('ذخیره شد ✓')}}catch(x){if(x&&x.name==='AbortError')return}
+ const a=document.createElement('a');a.href=URL.createObjectURL(data instanceof Blob?data:new Blob([data]));a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);return msg('ذخیره شد ✓')}
+ try{await D.save({filename:name,data});msg(fb?'ذخیره شد ✓ پسوند .txt را از آخر اسم فایل حذف کن تا بشود .tgs':'ذخیره شد ✓')}catch(x){if(x&&x.code==='rejected_extension'&&name.endsWith('.tgs'))return dl(data,name+'.txt',true);if(!x||x.code!=='declined')msg('خطا: '+(x&&x.message||x))}}
+const ser=d=>JSON.stringify(d,(k,v)=>typeof v==='number'&&!isFinite(v)?0:v);
+$('#ej').onclick=async()=>{const s=S[cur];if(!s)return msg('اول یک فایل باز کنید');try{await dl(new Blob([ser(s.data)],{type:'application/json'}),s.name+'.json')}catch(x){msg('خطا در خروجی JSON: '+(x&&x.message||x))}};
+/* ---------- TGS export with automatic size reduction (<= 64 KB) ---------- */
+const TGS_LIM=65000;
+const gzB=str=>pako.gzip(str,{level:9});
+const KB=n=>(n/1024).toFixed(1)+'KB';
+function tgsClean(d){
+ walk(d,o=>{if(!Array.isArray(o))['nm','mn','ln','cl','ix'].forEach(k=>delete o[k])});
+ [d.layers,...(d.assets||[]).map(a=>a.layers)].forEach(arr=>{if(!Array.isArray(arr))return;
+  for(let i=arr.length-1;i>=0;i--){const l=arr[i];if(l&&l.hd&&!l.td&&!arr.some(x=>x!==l&&x.parent!=null&&x.parent===l.ind))arr.splice(i,1)}});
+ const used=new Set(),mark=arr=>(arr||[]).forEach(l=>{if(l.refId&&!used.has(l.refId)){used.add(l.refId);const a=(d.assets||[]).find(x=>x.id===l.refId);if(a)mark(a.layers)}});
+ mark(d.layers);d.assets=(d.assets||[]).filter(a=>used.has(a.id));
+ tgsDedupe(d)}
+function tgsDedupe(d){const j=JSON.stringify;
+ walk(d,o=>{const k=o.k;if(o.a===1&&Array.isArray(k)&&k.length>2&&k[0]&&typeof k[0]==='object'&&k[0].t!=null&&!k.some(x=>x.e!=null)){
+  for(let i=k.length-2;i>=1;i--){const v=j(k[i].s);if(v!==undefined&&v===j(k[i-1].s)&&v===j(k[i+1].s))k.splice(i,1)}}})}
+const tgsCanHalve=d=>{let ok=d.fr===60;walk(d,o=>{if(o.ty===0&&o.tm)ok=false});return ok};
+function tgsHalve(d){
+ d.fr/=2;d.ip=Math.round(d.ip/2);d.op=Math.round(d.op/2);
+ [d.layers,...(d.assets||[]).map(a=>a.layers)].forEach(arr=>(arr||[]).forEach(l=>{
+  if(typeof l.ip==='number')l.ip=Math.round(l.ip/2);if(typeof l.op==='number')l.op=Math.max(Math.round(l.op/2),(l.ip||0)+1);if(typeof l.st==='number')l.st/=2}));
+ walk(d,o=>{const k=o.k;if(o.a===1&&Array.isArray(k)&&k[0]&&typeof k[0]==='object'&&k[0].t!=null){
+  k.forEach(x=>{x.t=Math.round(x.t/2)});
+  for(let i=k.length-2;i>=0;i--)if(k[i].t>=k[i+1].t)k.splice(i,1)}});
+ tgsDedupe(d)}
+const TKEYS={t:1,ip:1,op:1,st:1,sr:1,fr:1};
+const tgsRound=(ps,pl)=>(key,v)=>{if(typeof v!=='number')return v;if(!isFinite(v))return 0;if(Number.isInteger(v))return v;
+ const p=TKEYS[key]?3:(Math.abs(v)<=2?ps:pl),m=Math.pow(10,p);return Math.round(v*m)/m};
+function tgsPack(d){
+ const orig=gzB(ser(d));if(orig.length<=TGS_LIM)return{bytes:orig,from:orig.length,to:orig.length,steps:[]};
+ const lv=[[3,2,0],[2,1,0],[2,1,1],[1,0,1]];let out=orig,steps=[];
+ for(const[ps,pl,hf]of lv){
+  const c=JSON.parse(ser(d));tgsClean(c);let h=false;
+  if(hf&&tgsCanHalve(c)){tgsHalve(c);h=true}
+  out=gzB(JSON.stringify(c,tgsRound(ps,pl)));steps=h?['fps']:[];
+  if(out.length<=TGS_LIM)break}
+ return{bytes:out,from:orig.length,to:out.length,steps}}
+function tgsProtect(src){const c=JSON.parse(ser(src));tgsClean(c);const m={};(c.assets||[]).forEach((a,i)=>{m[a.id]='a'+i;a.id='a'+i});
+ walk(c,o=>{if(o.refId&&m[o.refId])o.refId=m[o.refId]});return c}
+async function doTgs(prot){const s=S[cur];if(!s)return msg('اول یک فایل باز کنید');try{const d=prot?tgsProtect(s.data):s.data,w=[];
+ if(d.w!==512||d.h!==512)w.push('اندازه باید 512×512 باشد');if(d.fr!==60&&d.fr!==30)w.push('فریم‌ریت باید 30 یا 60 باشد');if(d.op-d.ip>180)w.push('بیش از 3 ثانیه');let ts=false;walk(d,o=>{if(o.ty===0&&o.sr!=null&&o.sr!==1)ts=true});if(ts)w.push('Time Stretch (فریم‌ریت متفاوت) در تلگرام پشتیبانی نمی‌شود');
+ const r=tgsPack(d);
+ if(r.to!==r.from)w.unshift('حجم از '+KB(r.from)+' به '+KB(r.to)+' کاهش یافت'+(r.steps.length?' (فریم‌ریت نصف شد)':''));
+ if(r.to>65536)w.unshift('هنوز بیشتر از 64KB است ('+KB(r.to)+') — لایه یا فریم کمتر کن');
+ await dl(new Blob([r.bytes],{type:'application/gzip'}),s.name+'.tgs');
+ if(w.length)msg((r.to>65536?'⚠ ':'ℹ ')+w.join(' | '))}catch(x){msg('خطا در خروجی TGS: '+(x&&x.message||x))}}
+$('#et').onclick=()=>doTgs(false);$('#ep').onclick=()=>doTgs(true);
+
+/* ---------- Puzzle page: 8 pieces -> import, replace text across all, export all ---------- */
+const PZ={an:[],ck:[[],[],[],[],[],[],[],[]],last:[],tg:null};
+const pzAuto=d=>(d.layers||[]).map((l,k)=>/text|متن|txt/i.test(l.nm||'')?k:-1).filter(k=>k>=0);
+const pzIdx=()=>[0,1,2,3,4,5,6,7].filter(i=>S[i]);
+function pzPrev(i){const pv=$('#pzv'+i);if(!pv)return;
+ if(PZ.an[i]){try{PZ.an[i].destroy()}catch(_){}PZ.an[i]=null}
+ pv.innerHTML='';const s=S[i];
+ if(!s){pv.innerHTML='<p class="e" style="margin:0;background:none;color:#666;padding-top:38%">خالی</p>';return}
+ const d=clone(s.data);PZ.ck[i].forEach(k=>{if(d.layers[k])d.layers[k].hd=true});
+ try{PZ.an[i]=lottie.loadAnimation({container:pv,renderer:'svg',loop:true,autoplay:true,animationData:d})}catch(_){}}
+function pzBuild(){
+ PZ.an.forEach(a=>{try{a&&a.destroy()}catch(_){}});PZ.an=[];
+ const g=$('#pzg');g.innerHTML='';
+ for(let i=0;i<8;i++){const s=S[i],c=document.createElement('div'),pv=document.createElement('div'),nm=document.createElement('div'),ls=document.createElement('div');
+  c.className='pzc';pv.className='pzp';pv.id='pzv'+i;nm.className='pzn';nm.textContent=(i+1)+(s?' · '+s.name:' · خالی');ls.className='pzl';
+  c.append(pv,nm,ls);g.append(c);
+  if(s)s.data.layers.forEach((l,k)=>{const lb=document.createElement('label'),cb=document.createElement('input');cb.type='checkbox';cb.checked=PZ.ck[i].includes(k);lb.classList.toggle('on',cb.checked);
+   cb.onchange=()=>{const j=PZ.ck[i].indexOf(k);if(cb.checked&&j<0)PZ.ck[i].push(k);if(!cb.checked&&j>=0)PZ.ck[i].splice(j,1);lb.classList.toggle('on',cb.checked);pzPrev(i)};
+   lb.append(cb,document.createTextNode(' '+(l.nm||('Layer '+(k+1)))));ls.append(lb)});
+  pzPrev(i)}}
+$('#pzb').onclick=()=>{$('#pz').classList.add('on');pzBuild()};
+$('#pzcl').onclick=()=>{$('#pz').classList.remove('on');PZ.an.forEach(a=>{try{a&&a.destroy()}catch(_){}});PZ.an=[];sel=null;show(false)};
+$('#pzi').onclick=()=>$('#pzfile').click();
+$('#pzfile').onchange=async e=>{
+ const fs=[...e.target.files].sort((a,b)=>a.name.localeCompare(b.name,undefined,{numeric:true})).slice(0,8);e.target.value='';if(!fs.length)return;
+ const errs=[];
+ for(let i=0;i<8;i++){
+  if(i>=fs.length){S[i]=null;PZ.ck[i]=[];continue}
+  const f=fs[i],base=f.name.replace(/\.[^.]+$/,''),ext=f.name.split('.').pop().toLowerCase();
+  try{let data;
+   if(ext==='svg')data=newLottie(svgToShapes(await f.text()),base);
+   else{data=await readLottie(f);await ensureLoadable(data)}
+   if(!data.layers)throw'ساختار Lottie نامعتبر';
+   S[i]={name:base,data,h:[],r:[]};PZ.ck[i]=pzAuto(data)}
+  catch(x){errs.push((i+1)+': '+(x&&x.message||x));S[i]=null;PZ.ck[i]=[]}}
+ PZ.on=false;pzBuild();msg(errs.length?'⚠ خطا در فایل: '+errs.join(' | '):'✓ '+fs.length+' فایل وارد شد (به ترتیب نام) | تیک لایه‌های متن قدیمی را بزن')};
+const pzLayer=l=>/^pz·/.test((l&&l.nm)||'');
+function pzTrace(txt,fam){const k=txt+'|'+fam;if(!PZ.tr||PZ.tr.k!==k)PZ.tr={k,r:traceText(txt,fam,240)};return PZ.tr.r}
+function pzApply(first){
+ const txt=$('#pzx').value.trim();if(!txt){if(first)msg('متن را بنویس');return}
+ const idx=pzIdx();if(!idx.length){if(first)msg('اول فایل‌ها را وارد کن');return}
+ try{
+  const tr=pzTrace(txt,$('#pzf').value);if(!tr.polys.length)throw'متن قابل نمایش نیست';
+  const d0=S[idx[0]].data,tile=d0.w||512,th=d0.h||512,total=tile*idx.length;
+  if(first&&tr.w*(+$('#pzs').value/100*th)/tr.h>total*.98)$('#pzs').value=Math.max(+$('#pzs').min,Math.floor(total*.98*100*tr.h/(tr.w*th)));
+  const f=(+$('#pzs').value/100*th)/tr.h,dx=+$('#pzxo').value,dy=+$('#pzy').value,fill=$('#pzfl').value,line=$('#pzol').value,t=+$('#pzw').value;
+  idx.forEach((si,n)=>{const s=S[si],d=s.data,arr=d.layers,ox=n*tile+tile/2;let at=0;
+   if(first){s.h.push(JSON.stringify(s.data));if(s.h.length>40)s.h.shift();s.r=[];
+    const rm=[...PZ.ck[si]].filter(k=>arr[k]).sort((a,b)=>b-a),gone=rm.map(k=>arr[k]);if(rm.length)at=Math.min(...rm);
+    rm.forEach(k=>{if(arr[k].td&&arr[k+1]&&arr[k+1].tt&&!rm.includes(k+1))delete arr[k+1].tt});rm.forEach(k=>arr.splice(k,1));
+    arr.forEach(x=>{if(x.parent!=null&&gone.some(g=>g.ind!=null&&g.ind===x.parent))delete x.parent});PZ.ck[si]=[]}
+   else{const o=arr.findIndex(pzLayer);if(o>=0)at=o}
+   for(let k=arr.length-1;k>=0;k--)if(pzLayer(arr[k]))arr.splice(k,1);
+   const mg=t*f+2,it=[];
+   tr.polys.forEach(po=>{const v=po.map(p=>[(p[0]-tr.w/2)*f+total/2+dx-ox,(p[1]-tr.h/2)*f+dy]);let a=1e9,b=-1e9;v.forEach(p=>{a=Math.min(a,p[0]);b=Math.max(b,p[0])});
+    if(b>-tile/2-mg&&a<tile/2+mg)it.push({ty:'sh',ks:K1({i:v.map(()=>[0,0]),o:v.map(()=>[0,0]),v,c:true})})});
+   if(it.length){it.push({ty:'fl',c:K1([...unhex(fill),1]),o:K1(100),r:2});if(t>0)it.push({ty:'st',c:K1([...unhex(line),1]),o:K1(100),w:K1(2*t*f),lc:2,lj:2,ml:4})}
+   it.push({ty:'tr',p:K1([0,0]),a:K1([0,0]),s:K1([100,100]),r:K1(0),o:K1(100),sk:K1(0),sa:K1(0)});
+   const nl=shapeLayer([{ty:'gr',it,nm:'text'}],'pz·'+txt.slice(0,12));
+   nl.ind=Math.max(0,...arr.map(x=>x.ind||0))+1;nl.ip=d.ip;nl.op=d.op;nl.ks.p.k=[(d.w||512)/2,(d.h||512)/2,0];
+   arr.splice(Math.min(at,arr.length),0,nl)});
+  PZ.on=true;if(first)$('#pdm').value='tx';
+  if(first){PZ.last=idx;pzBuild();msg('✓ متن روی '+idx.length+' تکه گذاشته شد | روی پیش‌نمایش بکش تا جابه‌جا شود، با اسلایدر اندازه را عوض کن')}
+  else idx.forEach(pzPrev)
+ }catch(x){msg('خطا: '+(x&&x.message||x))}}
+let pzRaf=0;const pzLive=()=>{if(!PZ.on||pzRaf)return;pzRaf=requestAnimationFrame(()=>{pzRaf=0;pzApply(false)})};
+$('#pzr').onclick=()=>pzApply(!PZ.on||PZ.ck.some(a=>a.length));
+['pzx','pzfl','pzol','pzw','pzs','pzy','pzxo'].forEach(id=>$('#'+id).addEventListener('input',pzLive));$('#pzf').addEventListener('change',pzLive);
+$('#pzsm').onclick=()=>{$('#pzs').value=+$('#pzs').value-5;pzLive()};$('#pzsp').onclick=()=>{$('#pzs').value=+$('#pzs').value+5;pzLive()};
+$('#pzd').onclick=()=>{let n=0;pzIdx().forEach(si=>{const s=S[si],arr=s.data.layers;if(arr.some(pzLayer)){s.h.push(JSON.stringify(s.data));if(s.h.length>40)s.h.shift();s.r=[];for(let k=arr.length-1;k>=0;k--)if(pzLayer(arr[k]))arr.splice(k,1);n++}});
+ PZ.on=false;PZ.ck=[[],[],[],[],[],[],[],[]];pzBuild();msg(n?'🗑 متن حذف شد':'متنی روی تکه‌ها نیست')};
+$('#pzg').onpointerdown=e=>{const pv=e.target.closest&&e.target.closest('.pzp'),useTg=$('#pdm').value==='tg';if(!pv||(useTg?!PZ.tg:!PZ.on))return;e.preventDefault();
+ const g=$('#pzg'),idx=pzIdx(),sc=((S[idx[0]]&&S[idx[0]].data.w)||512)/Math.max(1,pv.offsetWidth),p0=loc(e.clientX,e.clientY),X=useTg?$('#pgx'):$('#pzxo'),Y=useTg?$('#pgy'):$('#pzy'),x0=+X.value,y0=+Y.value;
+ try{g.setPointerCapture(e.pointerId)}catch(_){}
+ const mv=ev=>{const p=loc(ev.clientX,ev.clientY);X.value=Math.round(x0+(p[0]-p0[0])*sc);Y.value=Math.round(y0+(p[1]-p0[1])*sc);useTg?pzTgLive():pzLive()};
+ const up=()=>{g.removeEventListener('pointermove',mv);g.removeEventListener('pointerup',up);g.removeEventListener('pointercancel',up)};
+ g.addEventListener('pointermove',mv);g.addEventListener('pointerup',up);g.addEventListener('pointercancel',up)};
+$('#pzu').onclick=()=>{let n=0;PZ.last.forEach(i=>{const s=S[i];if(s&&s.h.length){s.r.push(JSON.stringify(s.data));s.data=JSON.parse(s.h.pop());PZ.ck[i]=[];n++}});PZ.last=[];PZ.on=false;if(PZ.tg&&!pzIdx().some(i=>S[i].data.layers.some(pzTgL)))PZ.tg=null;if(!n)return msg('چیزی برای برگشت نیست');pzBuild();msg('↩ برگشت')};
+
+/* ---------- Puzzle: delete ticked layers / auto-tick text / TGS overlay ---------- */
+const pzTgL=l=>/^pzt·/.test((l&&l.nm)||'');
+const pzSync=()=>{PZ.on=pzIdx().some(i=>S[i].data.layers.some(pzLayer));if(PZ.tg&&!pzIdx().some(i=>S[i].data.layers.some(pzTgL)))PZ.tg=null};
+function pzSnap(s){s.h.push(JSON.stringify(s.data));if(s.h.length>40)s.h.shift();s.r=[]}
+function pzSpl(si,k){const arr=S[si].data.layers;arr.splice(k,1);PZ.ck[si]=PZ.ck[si].filter(x=>x!==k).map(x=>x>k?x-1:x)}
+$('#pza').onclick=()=>{let n=0;pzIdx().forEach(i=>{PZ.ck[i]=pzAuto(S[i].data);n+=PZ.ck[i].length});pzBuild();msg(n?'☑ '+n+' لایهٔ متن تیک خورد — دکمهٔ «حذف لایه‌های تیک‌خورده» یا «گذاشتن متن» را بزن':'لایه‌ای با اسم text / متن پیدا نشد؛ دستی تیک بزن')};
+$('#pzdl').onclick=()=>{const done=[];let n=0;
+ pzIdx().forEach(si=>{const s=S[si],arr=s.data.layers,rm=[...PZ.ck[si]].filter(k=>arr[k]).sort((a,b)=>b-a);if(!rm.length)return;
+  pzSnap(s);const gone=rm.map(k=>arr[k]);
+  rm.forEach(k=>{if(arr[k].td&&arr[k+1]&&arr[k+1].tt&&!rm.includes(k+1))delete arr[k+1].tt});rm.forEach(k=>arr.splice(k,1));
+  arr.forEach(x=>{if(x.parent!=null&&gone.some(g=>g.ind!=null&&g.ind===x.parent))delete x.parent});
+  PZ.ck[si]=[];done.push(si);n+=rm.length});
+ if(!n)return msg('اول زیر تکه‌ها تیک لایه‌هایی که می‌خوای پاک بشن رو بزن');
+ PZ.last=done;pzSync();pzBuild();msg('🗑 '+n+' لایه حذف شد (با ↩ برمی‌گردد)')};
+/* target select */
+(()=>{const t=$('#pgt');t.innerHTML='<option value="all">روی کل پازل</option>';for(let i=0;i<8;i++){const o=document.createElement('option');o.value=i;o.textContent='فقط تکه '+(i+1);t.append(o)}})();
+function pzTgApply(first){
+ const T=PZ.tg;if(!T)return;const idx=pzIdx();if(!idx.length)return;
+ const sv=$('#pgt').value,tg=sv==='all'?idx:idx.filter(i=>i===+sv);
+ if(!tg.length)return msg('تکهٔ انتخاب‌شده خالی است');
+ const d0=S[tg[0]].data,tile=d0.w||512,th=d0.h||512,total=tile*tg.length,
+  size=+$('#pgs').value/100*th,dx=+$('#pgx').value,dy=+$('#pgy').value;
+ try{
+  if(first){
+   idx.forEach(si=>{const s=S[si];pzSnap(s);for(let k=s.data.layers.length-1;k>=0;k--)if(pzTgL(s.data.layers[k]))pzSpl(si,k)});
+   PZ.last=idx;
+  }
+  idx.forEach(si=>{const n=tg.indexOf(si);if(n<0)return;const s=S[si],d=s.data,arr=d.layers,px=total/2+dx-n*tile,py=(d.h||512)/2+dy;
+   if(first){
+    const m=importComp(T.src,d),z=size/Math.max(m.w,m.h),sr=d.fr&&m.fr?d.fr/m.fr:1;
+    arr.unshift({ddd:0,ind:Math.max(0,...arr.map(x=>x.ind||0))+1,ty:0,nm:'pzt·'+T.name.slice(0,14),refId:m.id,w:m.w,h:m.h,sr,st:d.ip-m.ip*sr,
+     ks:{o:K1(100),r:K1(0),p:K1([px,py,0]),a:K1([m.w/2,m.h/2,0]),s:K1([z*100,z*100,100])},ao:0,ip:d.ip,op:d.op,bm:0});
+    PZ.ck[si]=PZ.ck[si].map(x=>x+1);
+   }else{
+    const l=arr.find(pzTgL);if(!l)return;const a=l.ks.a.k,z=size/Math.max(l.w||512,l.h||512);
+    l.ks.p.k=[px,py,0];l.ks.s.k=[z*100,z*100,100]}});
+  if(first){pzBuild();msg('✓ TGS روی '+(sv==='all'?'کل پازل':'تکه '+(+sv+1))+' گذاشته شد | با اسلایدر یا کشیدن روی پیش‌نمایش جابه‌جا کن')}
+  else tg.forEach(pzPrev)
+ }catch(x){msg('خطا: '+(x&&x.message||x))}}
+let pzTgRaf=0;const pzTgLive=()=>{if(!PZ.tg||pzTgRaf)return;pzTgRaf=requestAnimationFrame(()=>{pzTgRaf=0;pzTgApply(false)})};
+['pgs','pgx','pgy'].forEach(id=>$('#'+id).addEventListener('input',pzTgLive));
+$('#pgt').addEventListener('change',()=>{if(PZ.tg)pzTgApply(true)});
+$('#pgi').onclick=()=>{if(!pzIdx().length)return msg('اول فایل‌های پازل را وارد کن');$('#pgf').click()};
+$('#pgf').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;
+ const base=f.name.replace(/\.[^.]+$/,''),ext=f.name.split('.').pop().toLowerCase();
+ try{let data;
+  if(ext==='svg')data=newLottie(svgToShapes(await f.text()),base);
+  else{data=await readLottie(f);await ensureLoadable(data)}
+  if(!data.layers)throw'ساختار Lottie نامعتبر';
+  PZ.tg={src:data,name:base};$('#pgs').value=100;$('#pgx').value=0;$('#pgy').value=0;$('#pdm').value='tg';pzTgApply(true)}
+ catch(x){msg('خطا: '+(x&&x.message||x))}};
+$('#pgd').onclick=()=>{let n=0;const done=[];
+ pzIdx().forEach(si=>{const s=S[si];if(!s.data.layers.some(pzTgL))return;pzSnap(s);for(let k=s.data.layers.length-1;k>=0;k--)if(pzTgL(s.data.layers[k])){pzSpl(si,k);n++}done.push(si)});
+ PZ.tg=null;if(done.length)PZ.last=done;pzBuild();msg(n?'🗑 TGS حذف شد':'TGS‌ای روی پازل نیست')};
+
+/* ---------- Telegram: create custom-emoji / sticker pack directly ---------- */
+async function tgApi(tok,method,params,files){
+ const fd=new FormData();for(const k in params)fd.append(k,typeof params[k]==='string'?params[k]:JSON.stringify(params[k]));
+ (files||[]).forEach(([n,f])=>fd.append(n,f,f.name));
+ let r;try{r=await fetch('https://api.telegram.org/bot'+tok+'/'+method,{method:'POST',body:fd})}catch(_){throw new Error('اتصال به تلگرام برقرار نشد (اینترنت/فیلتر یا محدودیت شبکه)')}
+ const j=await r.json().catch(()=>null);if(!j||!j.ok)throw new Error((j&&j.description)||'خطای تلگرام');return j.result}
+(()=>{try{const g=k=>localStorage.getItem(k)||'';$('#tgu').value=g('tgu');$('#tgn').value=g('tgn')||'OutisEmojizan';$('#tgh').value=g('tgh')||'OutisEmojizan';const k=g('tgk');if(k){$('#tgk').value=k;$('#tgr').checked=true}}catch(_){}})();
+$('#pztg').onclick=()=>{if(!pzIdx().length)return msg('اول فایل‌های پازل را وارد کن');$('#tgw').value='all';$('#tgp').classList.toggle('on')};
+$('#tgb').onclick=()=>{if(!pzIdx().length)return msg('اول یک فایل باز کن');$('#tgp').classList.toggle('on')};
+$('#tgc').onclick=()=>$('#tgp').classList.remove('on');
+$('#tgo').onclick=async()=>{
+ const st=$('#tgs'),say=(t,h)=>{st.innerHTML='';if(h){const a=document.createElement('a');a.href=h;a.target='_blank';a.textContent=h;a.style.color='#6cf';st.append(t+' ',a)}else st.textContent=t};
+ const tok=$('#tgk').value.trim(),uid=$('#tgu').value.trim(),short=$('#tgn').value.trim().toLowerCase(),title=($('#tgh').value.trim()||short).slice(0,64),typ=$('#tgy').value,emo=$('#tge').value.trim()||'🧩';
+ if(!tok||!uid||!short)return say('⚠ توکن، آیدی عددی و اسم کوتاه پک را پر کن');
+ const idx=$('#tgw').value==='cur'?(S[cur]?[cur]:[]):pzIdx();if(!idx.length)return say('⚠ اول یک فایل باز کن');
+ const b=$('#tgo');b.disabled=true;
+ try{
+  try{localStorage.setItem('tgu',uid);localStorage.setItem('tgn',$('#tgn').value);localStorage.setItem('tgh',$('#tgh').value);if($('#tgr').checked)localStorage.setItem('tgk',tok);else localStorage.removeItem('tgk')}catch(_){}
+  say('⏳ بررسی ربات...');
+  const me=await tgApi(tok,'getMe',{}),un=(me.username||'').toLowerCase(),suf='_by_'+un;
+  let name=short.replace(/[^a-z0-9_]/g,'_').replace(/_+/g,'_').replace(/^_+|_+$/g,'');if(!/^[a-z]/.test(name))name='p'+name;
+  name=name.slice(0,64-suf.length).replace(/_+$/,'')+suf;
+  say('⏳ آماده‌سازی TGS ها...');
+  const prot=$('#pzk').checked,files=[],big=[];
+  idx.forEach(i=>{const s=S[i],r=tgsPack(prot?tgsProtect(s.data):s.data);if(r.to>65536)big.push((i+1)+': '+KB(r.to));files.push(new File([r.bytes],'p'+(i+1)+'.tgs',{type:'application/x-tgsticker'}))});
+  if(big.length)throw new Error('این تکه‌ها بالای 64KB هستند و تلگرام قبول نمی‌کند: '+big.join(' | '));
+  const inp=n=>({sticker:'attach://s'+n,format:'animated',emoji_list:[...emo].length?Array.from(new Set(emo.match(/\p{Extended_Pictographic}(\u200d\p{Extended_Pictographic}|\ufe0f)*/gu)||['🧩'])).slice(0,20):['🧩']});
+  let exists=true;try{await tgApi(tok,'getStickerSet',{name})}catch(_){exists=false}
+  if(!exists){
+   say('⏳ ساخت پک...');
+   await tgApi(tok,'createNewStickerSet',{user_id:uid,name,title,sticker_type:typ,stickers:files.map((_,n)=>inp(n))},files.map((f,n)=>['s'+n,f]));
+  }else{
+   for(let n=0;n<files.length;n++){say('⏳ افزودن تکه '+(n+1)+' از '+files.length+'...');
+    await tgApi(tok,'addStickerToSet',{user_id:uid,name,sticker:inp(0)},[['s0',files[n]]])}
+  }
+  const link='https://t.me/'+(typ==='custom_emoji'?'addemoji/':'addstickers/')+name;
+  say('✅ '+files.length+' تکه در پک ذخیره شد:',link);msg('✅ پک در تلگرام ساخته شد');
+ }catch(x){say('❌ '+(x&&x.message||x))}
+ b.disabled=false};
+async function pzExport(){
+ const idx=pzIdx();if(!idx.length)return msg('اول فایل‌ها را وارد کن');
+ try{const prot=$('#pzk').checked,names=idx.map(i=>S[i].name),dup=new Set(names).size!==names.length,files=[],warn=[];
+  idx.forEach(i=>{const s=S[i],r=tgsPack(prot?tgsProtect(s.data):s.data);if(r.to>65536)warn.push((i+1)+': '+KB(r.to));
+   files.push(new File([r.bytes],(dup?(i+1)+'_':'')+s.name+'.tgs',{type:'application/gzip'}))});
+  const inC=typeof claude!=='undefined'&&claude&&typeof claude.use==='function';let shared=false;
+  if(!inC&&navigator.canShare&&navigator.canShare({files})){try{await navigator.share({files,title:'TGS'});shared=true}catch(x){if(x&&x.name==='AbortError')return}}
+  if(!shared)for(const f of files){await dl(f,f.name);await new Promise(r=>setTimeout(r,500))}
+  msg((warn.length?'⚠ بالای 64KB: '+warn.join(' | ')+' — ':'✓ ')+files.length+' فایل خروجی')}catch(x){msg('خطا در خروجی: '+(x&&x.message||x))}}
+$('#pze').onclick=pzExport;
+
+/* ---------- viewer zoom / pan ---------- */
+let gestT=0;
+{const WS=$('#ws'),ST=$('#stage'),vz={z:1,x:0,y:0},cl=(v,a,b)=>Math.min(b,Math.max(a,v));
+ const side=()=>Math.max(60,Math.min(WS.clientWidth,WS.clientHeight)-16);
+ const apply=()=>{const W=WS.clientWidth,H=WS.clientHeight,s=side()*vz.z,d=S[cur]&&S[cur].data;
+  ST.style.width=ST.style.height=s+'px';ST.style.left=(W/2+vz.x-s/2)+'px';ST.style.top=(H/2+vz.y-s/2)+'px';
+  $('#zl').textContent=Math.round(s/((d&&d.w)||512)*100)+'%'};
+ const zoomAt=(p,nz)=>{nz=cl(nz,.25,12);const r=nz/vz.z,W=WS.clientWidth,H=WS.clientHeight;
+  vz.x=(p[0]-W/2)-((p[0]-W/2)-vz.x)*r;vz.y=(p[1]-H/2)-((p[1]-H/2)-vz.y)*r;vz.z=nz;apply()};
+ const fit=()=>{vz.z=1;vz.x=vz.y=0;apply()};
+ const ctr=()=>[WS.clientWidth/2,WS.clientHeight/2];
+ $('#zi').onclick=()=>zoomAt(ctr(),vz.z*1.25);$('#zo').onclick=()=>zoomAt(ctr(),vz.z/1.25);$('#zl').onclick=fit;$('#zf').onclick=fit;
+ const pt=e=>{const r=WS.getBoundingClientRect();return matchMedia('(orientation:portrait)').matches?[e.clientY-r.top,r.right-e.clientX]:[e.clientX-r.left,e.clientY-r.top]};
+ WS.addEventListener('wheel',e=>{e.preventDefault();zoomAt(pt(e),vz.z*Math.exp(-e.deltaY*.0015))},{passive:false});
+ const P=new Map();let g=null,moved=false;
+ const dist=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1])||1,mid=(a,b)=>[(a[0]+b[0])/2,(a[1]+b[1])/2];
+ const base=()=>{const v=[...P.values()];
+  if(v.length===1)g={m:'p',s:v[0],x0:vz.x,y0:vz.y};
+  else if(v.length>=2)g={m:'z',d0:dist(v[0],v[1]),z0:vz.z,m0:mid(v[0],v[1]),x0:vz.x,y0:vz.y}};
+ WS.addEventListener('pointerdown',e=>{P.set(e.pointerId,pt(e));if(P.size===1)moved=false;if(P.size>=2)moved=true;base()});
+ addEventListener('pointermove',e=>{if(!P.has(e.pointerId))return;P.set(e.pointerId,pt(e));const v=[...P.values()],W=WS.clientWidth,H=WS.clientHeight;
+  if(g&&g.m==='z'&&v.length>=2){const nz=cl(g.z0*dist(v[0],v[1])/g.d0,.25,12),m=mid(v[0],v[1]),u=[(g.m0[0]-W/2-g.x0)/g.z0,(g.m0[1]-H/2-g.y0)/g.z0];
+   vz.z=nz;vz.x=m[0]-u[0]*nz-W/2;vz.y=m[1]-u[1]*nz-H/2;apply()}
+  else if(g&&g.m==='p'&&v.length===1){const dx=v[0][0]-g.s[0],dy=v[0][1]-g.s[1];
+   if(!moved&&Math.hypot(dx,dy)>8)moved=true;if(moved){vz.x=g.x0+dx;vz.y=g.y0+dy;apply()}}});
+ const up=e=>{if(!P.has(e.pointerId))return;P.delete(e.pointerId);if(moved)gestT=Date.now();base()};
+ addEventListener('pointerup',up);addEventListener('pointercancel',up);
+ WS.addEventListener('click',e=>{if(e.target!==WS||pcMode||Date.now()-gestT<350)return;sel=null;panels()});
+ new ResizeObserver(apply).observe(WS);apply();window.vApply=apply}
+{const m=$('#main');let W={l:116,r:210};try{Object.assign(W,JSON.parse(localStorage.getItem('pw')||'{}'))}catch(_){}
+ const mk=c=>{const e=document.createElement('div');e.className='sp '+c;m.append(e);return e},sL=mk('l'),sR=mk('r');
+ const cl=(v,a,b)=>Math.min(b,Math.max(a,v));
+ const ap=()=>{const mw=m.offsetWidth||800;W.l=cl(Math.round(W.l),0,Math.min(240,mw-W.r-120));W.r=cl(Math.round(W.r),0,Math.min(480,mw-W.l-120));
+  m.style.setProperty('--cl',W.l+'px');m.style.setProperty('--cr',W.r+'px');
+  sL.style.left=Math.max(0,2+W.l+1-9)+'px';sR.style.left=Math.min(mw-18,mw-2-W.r-1-9)+'px';
+  $('#tgL').classList.toggle('on',W.l===0);$('#tgR').classList.toggle('on',W.r===0);
+  try{localStorage.setItem('pw',JSON.stringify(W))}catch(_){}};
+ const drag=(el,side)=>{el.onpointerdown=e=>{e.preventDefault();try{el.setPointerCapture(e.pointerId)}catch(_){}
+  const x0=loc(e.clientX,e.clientY)[0],w0=W[side];
+  const mv=ev=>{const dx=loc(ev.clientX,ev.clientY)[0]-x0;W[side]=side==='l'?w0+dx:w0-dx;ap()};
+  const up=()=>{el.removeEventListener('pointermove',mv);el.removeEventListener('pointerup',up);el.removeEventListener('pointercancel',up);
+   if(W[side]<40)W[side]=0;ap();requestAnimationFrame(()=>{window.vApply&&window.vApply();ph()})};
+  el.addEventListener('pointermove',mv);el.addEventListener('pointerup',up);el.addEventListener('pointercancel',up)}};
+ drag(sL,'l');drag(sR,'r');
+ $('#tgL').onclick=()=>{W.l=W.l?0:116;ap();requestAnimationFrame(()=>{window.vApply&&window.vApply();ph()})};
+ $('#tgR').onclick=()=>{W.r=W.r?0:210;ap();requestAnimationFrame(()=>{window.vApply&&window.vApply();ph()})};
+ new ResizeObserver(ap).observe(m);ap()}
+show(false);
+</script></body></html>
